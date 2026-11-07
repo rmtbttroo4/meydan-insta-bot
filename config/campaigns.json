@@ -1,0 +1,34 @@
+{
+  "_aciklama": "Kampanya fiyatlarini buradan guncelle. 'gecerlilik_bitis' tarihi gecince bot bu kampanyayi PAYLASMAZ, baska konuya gecer. Tarih formati: YYYY-AA-GG.",
+
+  "tarife": {
+    "aktif": true,
+    "gecerlilik_bitis": "2026-11-30",
+    "baslik": "Faturalı Tarifeler",
+    "alt_baslik": "12 ay sabit fiyat garantisi",
+    "rozet": ["12 FATURA", "DÖNEMİ", "Sabit Fiyat", "Garantisi"],
+    "dakika_sms": "1000 DK + 250 SMS",
+    "paketler": [
+      {"ad": "5 GB",  "eski": 375, "yeni": 270},
+      {"ad": "10 GB", "eski": 450, "yeni": 310},
+      {"ad": "20 GB", "eski": 550, "yeni": 400},
+      {"ad": "40 GB", "eski": 750, "yeni": 620, "ek": "3000 DK + 250 SMS + TT Prime", "vurgu": true}
+    ],
+    "birim": "TL/ay",
+    "not": "Yeni hat / numara taşıma, 12 fatura dönemi taahhütlü. Koşullar mağazada."
+  },
+
+  "turbobox": {
+    "aktif": true,
+    "gecerlilik_bitis": "2026-11-30",
+    "baslik": "TurboBox 5G",
+    "alt_baslik": "Taşınabilir modem · Kolay kurulum",
+    "paketler": [
+      {"ad": "250 GB",   "fiyat": "1.200"},
+      {"ad": "500 GB",   "fiyat": "1.400"},
+      {"ad": "LİMİTSİZ", "fiyat": "1.750", "vurgu": true}
+    ],
+    "birim": "TL",
+    "not": "5G kapsama alanındaki adreslerde. 12 fatura dönemi taahhütlü."
+  }
+}

@@ -1,0 +1,54 @@
+name: Gunluk Instagram paylasimi
+
+on:
+  schedule:
+    - cron: "7 16 * * *"   # her gun 19:07 (Turkiye saati, UTC+3)
+  workflow_dispatch:
+    inputs:
+      konu:
+        description: "Konuyu zorla (bos birak = takvime gore)"
+        required: false
+      dry_run:
+        description: "Sadece uret, paylasma (true/false)"
+        required: false
+        default: "false"
+
+concurrency: instagram-post
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bagimliliklar
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -r requirements.txt
+      - name: Uret ve paylas
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.konu }}" ]; then ARGS="$ARGS --konu ${{ github.event.inputs.konu }}"; fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          python -m bot.main $ARGS
+      - name: Uretilen dosyalari sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: icerik-${{ github.run_id }}
+          path: out/
+          retention-days: 14

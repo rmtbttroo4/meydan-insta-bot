@@ -1,0 +1,21 @@
+name: Instagram token yenile
+
+# Instagram uzun omurlu token'i 60 gunde biter; bu is her ayin 1'inde ve 15'inde yeniler.
+on:
+  schedule:
+    - cron: "23 6 1,15 * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Yenile ve kaydet
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          NEW=$(curl -sf "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${IG_ACCESS_TOKEN}" | python3 -c "import sys,json;print(json.load(sys.stdin)['access_token'])")
+          test -n "$NEW"
+          gh secret set IG_ACCESS_TOKEN --body "$NEW" --repo "${{ github.repository }}"
+          echo "Token yenilendi."

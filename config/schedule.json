@@ -1,0 +1,12 @@
+{
+  "_aciklama": "Haftanin gunu -> konu ve format. format: reel (9:16 video) veya post (4:5 gorsel). Kampanya konusu suresi dolmussa 'yedek' konu kullanilir.",
+  "gunler": {
+    "pazartesi": {"konu": "tarife",    "format": "reel", "yedek": "hat"},
+    "sali":      {"konu": "servis",    "format": "post"},
+    "carsamba":  {"konu": "turbobox",  "format": "reel", "yedek": "sifir"},
+    "persembe":  {"konu": "ikinciel",  "format": "post"},
+    "cuma":      {"konu": "aksesuar",  "format": "reel"},
+    "cumartesi": {"konu": "ipucu",     "format": "post"},
+    "pazar":     {"konu": "tanitim",   "format": "reel"}
+  }
+}
