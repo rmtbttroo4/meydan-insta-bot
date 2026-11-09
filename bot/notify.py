@@ -5,7 +5,7 @@ from email.message import EmailMessage
 
 def send(subject, body, attachment=None):
     user = os.environ.get("GMAIL_USER"); pw = os.environ.get("GMAIL_APP_PASSWORD")
-    to = os.environ.get("REPORT_TO", user)
+    to = os.environ.get("REPORT_TO") or user
     if not user or not pw:
         print("[notify] Gmail ayari yok, e-posta atlandi.\n", subject, "\n", body); return
     m = EmailMessage(); m["Subject"] = subject; m["From"] = user; m["To"] = to; m.set_content(body)
