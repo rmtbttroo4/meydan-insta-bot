@@ -3,7 +3,7 @@ import datetime as dt
 
 GUNLER = ["pazartesi", "sali", "carsamba", "persembe", "cuma", "cumartesi", "pazar"]
 
-# Kampanya disi konular. Her konunun birkac varyanti var; hafta numarasina gore donusumlu secilir.
+# Kampanya disi konular. Her konunun birkac varyanti var; gun ve saate gore donusumlu secilir.
 KONULAR = {
     "hat": [
         {"ust": "Türk Telekom Yetkili Bayi", "baslik": "Hat işlemlerin tek adreste",
@@ -84,14 +84,19 @@ def hashtags(shop, extra):
     return " ".join(shop["base_hashtags"] + extra)
 
 
-def plan_for(bugun, shop, kampanyalar, takvim, zorla_konu=None, zorla_format=None):
-    """Bugun icin {konu, format, slides | post, caption} dondurur."""
-    g = takvim["gunler"][gun_adi(bugun)]
-    konu, fmt = zorla_konu or g["konu"], zorla_format or g["format"]
-    hafta = bugun.isocalendar()[1]
+def slot_for_now(now):
+    """Turkiye saatine gore: 15:00'ten once ogle, sonra aksam."""
+    return "ogle" if now.hour < 15 else "aksam"
+
+
+def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zorla_format=None):
+    """Verilen gun ve slot (ogle/aksam) icin {konu, format, slides | post, caption} dondurur."""
+    konu = zorla_konu or takvim["gunler"][gun_adi(bugun)][slot]
+    fmt = zorla_format or takvim["slotlar"][slot]["format"]
+    sira = bugun.toordinal() * 2 + (1 if slot == "aksam" else 0)  # varyant secimi icin
 
     if konu in ("tarife", "turbobox") and not kampanya_gecerli(kampanyalar.get(konu), bugun):
-        konu = g.get("yedek", "tanitim")
+        konu = takvim.get("yedekler", {}).get(konu, "tanitim")
 
     if konu == "tarife":
         k = kampanyalar["tarife"]
@@ -115,7 +120,7 @@ def plan_for(bugun, shop, kampanyalar, takvim, zorla_konu=None, zorla_format=Non
         post = {"tip": "plans", "veri": pv}
     else:
         varyantlar = KONULAR[konu]
-        v = varyantlar[hafta % len(varyantlar)]
+        v = varyantlar[(sira // 7) % len(varyantlar)] if len(varyantlar) > 1 else varyantlar[0]
         caption = f"{v['caption']}\n\n{iletisim(shop)}\n\n" + hashtags(shop, {
             "hat": ["#türktelekom", "#numarataşıma"], "servis": ["#telefontamiri", "#teknikservis"],
             "ikinciel": ["#ikincieltelefon", "#takas"], "sifir": ["#sıfırtelefon"], "aksesuar": ["#aksesuar", "#telefonkılıfı"],
@@ -126,5 +131,5 @@ def plan_for(bugun, shop, kampanyalar, takvim, zorla_konu=None, zorla_format=Non
                   {"tip": "cta", "sure": 4.7, "veri": {}}]
         post = {"tip": "tanitim" if konu == "tanitim" and fmt == "post" else "bullets", "veri": veri}
 
-    return {"tarih": bugun.isoformat(), "konu": konu, "format": fmt, "slides": slides, "post": post, "caption": caption,
-            "seed": bugun.toordinal()}
+    return {"tarih": bugun.isoformat(), "slot": slot, "konu": konu, "format": fmt, "slides": slides, "post": post, "caption": caption,
+            "seed": sira}

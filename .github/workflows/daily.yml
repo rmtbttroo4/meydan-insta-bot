@@ -1,17 +1,25 @@
 name: Gunluk Instagram paylasimi
 
+# Turkiye saati (UTC+3): ogle gonderisi ~12:00, aksam Reels'i ~19:00.
+# GitHub zamanlanmis isleri birkac dakika gecikmeli baslatabildigi icin 8 dakika erken tetiklenir.
 on:
   schedule:
-    - cron: "7 16 * * *"   # her gun 19:07 (Turkiye saati, UTC+3)
+    - cron: "52 8 * * *"    # 11:52 TR -> ogle (gorsel gonderi)
+    - cron: "52 15 * * *"   # 18:52 TR -> aksam (Reels)
   workflow_dispatch:
     inputs:
+      slot:
+        description: "Hangi paylasim? ogle = gorsel gonderi, aksam = Reels"
+        type: choice
+        options: [ogle, aksam]
+        default: ogle
       konu:
         description: "Konuyu zorla (bos birak = takvime gore)"
         required: false
       dry_run:
-        description: "Sadece uret, paylasma (true/false)"
-        required: false
-        default: "false"
+        description: "Sadece uret, paylasma"
+        type: boolean
+        default: false
 
 concurrency: instagram-post
 
@@ -40,10 +48,18 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           REPORT_TO: ${{ secrets.REPORT_TO }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+          IN_SLOT: ${{ github.event.inputs.slot }}
+          IN_KONU: ${{ github.event.inputs.konu }}
+          IN_DRY: ${{ github.event.inputs.dry_run }}
         run: |
-          ARGS=""
-          if [ -n "${{ github.event.inputs.konu }}" ]; then ARGS="$ARGS --konu ${{ github.event.inputs.konu }}"; fi
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "$EVENT_SCHEDULE" = "52 8 * * *" ]; then SLOT=ogle;
+          elif [ "$EVENT_SCHEDULE" = "52 15 * * *" ]; then SLOT=aksam;
+          else SLOT="${IN_SLOT:-ogle}"; fi
+          ARGS="--slot $SLOT"
+          if [ -n "$IN_KONU" ]; then ARGS="$ARGS --konu $IN_KONU"; fi
+          if [ "$IN_DRY" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          echo "Calisiyor: $ARGS"
           python -m bot.main $ARGS
       - name: Uretilen dosyalari sakla
         if: always()

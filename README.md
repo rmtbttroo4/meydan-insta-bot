@@ -1,21 +1,23 @@
 # MEYDAN GSM Instagram Botu
 
-Her gün 19:07'de (Türkiye saati) o günün konusuna göre bir **Reels** ya da **gönderi** üretir,
-Instagram'da (@meydangsm_) paylaşır ve sonucu Gmail'e rapor eder. Facebook sayfası gerekmez.
+Her gün **iki paylaşım** yapar ve sonucu Gmail'e rapor eder (Facebook sayfası gerekmez):
+- **12:00** → görsel gönderi (4:5)
+- **19:00** → Reels videosu (9:16)
 
 ## Haftalık takvim (config/schedule.json)
 
-| Gün | Konu | Format |
+| Gün | 12:00 Gönderi | 19:00 Reels |
 |---|---|---|
-| Pazartesi | Faturalı tarifeler (kampanya bitmişse: hat işlemleri) | Reels |
-| Salı | Tamir ve teknik servis | Gönderi |
-| Çarşamba | TurboBox 5G (kampanya bitmişse: sıfır telefon) | Reels |
-| Perşembe | İkinci el alım-satım ve takas | Gönderi |
-| Cuma | Aksesuar | Reels |
-| Cumartesi | Günün ipucu | Gönderi |
-| Pazar | Dükkân tanıtımı | Reels |
+| Pazartesi | Günün ipucu | Faturalı tarifeler |
+| Salı | Faturalı tarifeler | İkinci el / takas |
+| Çarşamba | Aksesuar | TurboBox 5G |
+| Perşembe | TurboBox 5G | Teknik servis |
+| Cuma | Günün ipucu | Aksesuar |
+| Cumartesi | İkinci el / takas | Sıfır telefon |
+| Pazar | Teknik servis | Dükkân tanıtımı |
 
-Her konunun birkaç farklı metni var, haftadan haftaya sırayla değişir (`bot/content.py`).
+Kampanya süresi dolunca: tarife → hat işlemleri, TurboBox → sıfır telefon.
+Aynı konu hafta içinde iki kez gelirse farklı metin ve görsel kullanılır (`bot/content.py`).
 
 ## Fiyat güncelleme (en önemli kısım)
 
@@ -71,9 +73,9 @@ Depo → Settings → Secrets and variables → Actions → **New repository sec
 | `REPORT_TO` | Raporun gideceği adres (boşsa GMAIL_USER) |
 
 ### 7. Test
-1. **Actions → Gunluk Instagram paylasimi → Run workflow** → `dry_run: true`.
+1. **Actions → Gunluk Instagram paylasimi → Run workflow** → slot seç (`ogle`/`aksam`), "Sadece uret, paylasma" kutusunu işaretle.
    Üretilen dosyalar işin sonunda **Artifacts** olarak indirilebilir; paylaşım yapılmaz.
-2. Her şey iyiyse bir kez `dry_run: false` ile çalıştır → Instagram'da gönderi çıkar, Gmail'e rapor gelir.
+2. Her şey iyiyse kutuyu işaretlemeden çalıştır → Instagram'da gönderi çıkar, Gmail'e rapor gelir.
 3. Sonrasında bot her gün kendisi çalışır.
 
 ## Yerelde deneme

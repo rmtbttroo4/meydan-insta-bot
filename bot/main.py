@@ -1,7 +1,8 @@
 """MEYDAN GSM Instagram botu.
 
 Kullanim:
-  python -m bot.main                      # bugunun icerigini uret ve paylas
+  python -m bot.main                      # su anki slotun (ogle/aksam) icerigini uret ve paylas
+  python -m bot.main --slot ogle          # ogle gonderisini uret ve paylas
   python -m bot.main --dry-run            # sadece uret (out/ klasorune), paylasma
   python -m bot.main --dry-run --hafta    # onumuzdeki 7 gunun hepsini uret (onizleme)
   python -m bot.main --konu tarife --format post   # konu/format zorla
@@ -22,7 +23,7 @@ def load(name):
 
 def build(plan, shop, outdir):
     os.makedirs(outdir, exist_ok=True)
-    base = os.path.join(outdir, f"{plan['tarih']}_{plan['konu']}")
+    base = os.path.join(outdir, f"{plan['tarih']}_{plan['slot']}_{plan['konu']}")
     if plan["format"] == "reel":
         dur = sum(s["sure"] for s in plan["slides"])
         cuts, acc = [], 0
@@ -46,38 +47,44 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--hafta", action="store_true")
     ap.add_argument("--tarih")
+    ap.add_argument("--slot", choices=["ogle", "aksam"])
     ap.add_argument("--konu"); ap.add_argument("--format", choices=["reel", "post"])
     ap.add_argument("--out", default=os.path.join(ROOT, "out"))
     a = ap.parse_args()
 
     shop, kamp, takvim = load("shop.json"), load("campaigns.json"), load("schedule.json")
-    bugun = dt.date.fromisoformat(a.tarih) if a.tarih else dt.datetime.now(TZ).date()
+    now = dt.datetime.now(TZ)
+    bugun = dt.date.fromisoformat(a.tarih) if a.tarih else now.date()
     gunler = [bugun + dt.timedelta(days=i) for i in range(7)] if a.hafta else [bugun]
+    slotlar = ["ogle", "aksam"] if (a.hafta and not a.slot) else [a.slot or content.slot_for_now(now)]
 
     for g in gunler:
-        plan = content.plan_for(g, shop, kamp, takvim, a.konu, a.format)
-        print(f"[{plan['tarih']}] konu={plan['konu']} format={plan['format']}")
-        path = build(plan, shop, a.out)
-        print("  ->", path)
-        if a.dry_run:
-            continue
+        for slot in slotlar:
+            run_one(g, slot, a, shop, kamp, takvim)
 
-        from . import storage, instagram, notify
-        try:
-            ctype = "video/mp4" if path.endswith(".mp4") else "image/jpeg"
-            url = storage.upload(path, f"instagram/{os.path.basename(path)}", ctype)
-            media_id = instagram.publish(url, plan["caption"], plan["format"])
-            link = instagram.permalink(media_id) or "(link alinamadi)"
-            notify.send(f"✅ MEYDAN GSM Instagram: {plan['konu']} paylaşıldı",
-                        f"Tarih: {plan['tarih']}\nKonu: {plan['konu']} ({plan['format']})\nLink: {link}\n\nAçıklama:\n{plan['caption']}",
-                        attachment=path if path.endswith(".jpg") else None)
-            print("  paylasildi:", link)
-        except Exception as e:
-            from . import notify
-            notify.send("❌ MEYDAN GSM Instagram paylaşımı BAŞARISIZ",
-                        f"Tarih: {plan['tarih']}\nKonu: {plan['konu']}\nHata: {e}\n\n{traceback.format_exc()}")
-            raise
 
+def run_one(g, slot, a, shop, kamp, takvim):
+    plan = content.plan_for(g, shop, kamp, takvim, slot, a.konu, a.format)
+    print(f"[{plan['tarih']} {slot}] konu={plan['konu']} format={plan['format']}")
+    path = build(plan, shop, a.out)
+    print("  ->", path)
+    if a.dry_run:
+        return
+
+    from . import storage, instagram, notify
+    try:
+        ctype = "video/mp4" if path.endswith(".mp4") else "image/jpeg"
+        url = storage.upload(path, f"instagram/{os.path.basename(path)}", ctype)
+        media_id = instagram.publish(url, plan["caption"], plan["format"])
+        link = instagram.permalink(media_id) or "(link alinamadi)"
+        notify.send(f"✅ MEYDAN GSM Instagram: {plan['konu']} paylaşıldı",
+                    f"Tarih: {plan['tarih']} ({plan['slot']})\nKonu: {plan['konu']} ({plan['format']})\nLink: {link}\n\nAçıklama:\n{plan['caption']}",
+                    attachment=path if path.endswith(".jpg") else None)
+        print("  paylasildi:", link)
+    except Exception as e:
+        notify.send("❌ MEYDAN GSM Instagram paylaşımı BAŞARISIZ",
+                    f"Tarih: {plan['tarih']} ({plan['slot']})\nKonu: {plan['konu']}\nHata: {e}\n\n{traceback.format_exc()}")
+        raise
 
 if __name__ == "__main__":
     sys.exit(main())
