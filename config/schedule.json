@@ -48,8 +48,13 @@
   "tek_seferlik": {
     "_aciklama": "Bir defaya mahsus plan: 'YYYY-AA-GG_slot': {maskot_konu, sira}",
     "2026-11-11_aksam": {
-      "maskot_konu": "tanitim",
-      "sira": 0
+      "hazir": "assets/hazir/meydi_3d_tanisma.mp4",
+      "konu": "tanitim",
+      "caption": "Tanışalım! Ben Meydi, MEYDAN GSM'in maskotu 👋 Telefonunla ilgili her derde çözüm için Altınoluk'ta seni bekliyoruz!",
+      "etiketler": [
+        "#teknoloji",
+        "#maskot"
+      ]
     }
   }
 }

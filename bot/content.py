@@ -448,6 +448,42 @@ def turbobox_fiyat_slaytlari(k, bugun, no):
     return [{"tip": "fiyat", "sure": 3.6, "veri": {"ust": "TurboBox 5G ile internet", "paket": p["ad"], "yeni": p["fiyat"], "birim": k["birim"],
              "alt": k["alt_baslik"], "not": k["not"]}} for p in secim]
 
+
+# ---------------- GEMINI KLIPLERI ----------------
+# assets/klipler/ klasorune yazisiz Meydi klipleri eklendikce, kodla cizilen Meydi sahneleri otomatik olarak
+# bu gercek 3D kliplerle degisir (yazilar yine bot tarafindan temiz eklenir). Eksik klip varsa cizim kullanilir.
+KLIP_ADLARI = ["selam", "kirik", "tamir", "yorgun", "kutu", "gosteriyor", "sasirma", "dusunuyor", "sevinc", "kutlama"]
+
+
+def sahne_klibi(s):
+    ef = set(s.get("efektler", []))
+    if "catlak" in ef: return "kirik"
+    if "yara_bandi" in ef: return "tamir"
+    if "kutu" in ef: return "kutu"
+    if "pil_dusuk" in ef or s.get("gri") or s.get("ifade") == "uykulu": return "yorgun"
+    if s.get("hareket") in ("el_salla", "gir"): return "selam"
+    if s.get("hareket") == "goster": return "gosteriyor"
+    if "kalp" in ef: return "kutlama"
+    if s.get("ifade") == "saskin": return "sasirma"
+    if s.get("ifade") == "dusunceli": return "dusunuyor"
+    if s.get("hareket") in ("zipla", "sevin"): return "sevinc"
+    return "selam"
+
+
+def klipe_cevir(slides):
+    """Tum sahnelerin klibi varsa maskot slaytini klip slaytlarina cevirir. (yeni_slaytlar, klip_kullanildi_mi)"""
+    from .render import klip_yolu
+    out, kul = [], False
+    for sl in slides:
+        if sl.get("tip") == "maskot":
+            sc = sl["veri"]["sahneler"]; keys = [sahne_klibi(x) for x in sc]
+            if all(klip_yolu(k) for k in keys):
+                for x, k in zip(sc, keys):
+                    out.append({"tip": "klip", "sure": x["sure"], "veri": {"klip": k, "ust": x.get("ust"), "balon": x.get("balon")}})
+                kul = True; continue
+        out.append(sl)
+    return out, kul
+
 def _sira_no(bugun, takvim, konu, slot):
     """Bu konunun bu slotta kacinci kez geldigi: haftada iki kez gelen konu (or. ipucu) her seferinde farkli icerik alir."""
     gunler = [g for g in GUNLER if takvim["gunler"][g][slot] == konu] or [gun_adi(bugun)]
@@ -480,6 +516,10 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
                 "post": {"tip": "ozel_gun", "veri": og}, "caption": caption, "seed": sira, "tema": tema}
 
     tek = takvim.get("tek_seferlik", {}).get(f"{bugun.isoformat()}_{slot}") if not zorla_konu else None
+    if tek and fmt == "reel" and tek.get("hazir"):
+        caption = f"{tek['caption']}\n\n{iletisim(shop)}\n\n" + hashtags(shop, tek.get("etiketler", []))
+        return {"tarih": bugun.isoformat(), "slot": slot, "konu": tek.get("konu", "hazir"), "format": "reel", "slides": None, "post": None,
+                "caption": caption, "seed": sira, "tema": tema, "hazir": tek["hazir"]}
     if tek and fmt == "reel" and tek.get("maskot_konu") in MASKOT_SENARYO:
         s_ = MASKOT_SENARYO[tek["maskot_konu"]][tek.get("sira", 0)]
         slides = [dict(x) for x in s_["slides"]] + [{"tip": "cta", "sure": 4.5, "veri": {**CTA_VARYANT[0], "maskot": True}}]
@@ -572,5 +612,10 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
             post = {"tip": p_["tip"], "veri": p_["veri"]}; slides = None; ana = p_["caption"]
         caption = f"{ana}\n\n{iletisim(shop)}\n\n" + hashtags(shop, _etiket(konu))
 
+    if fmt == "reel" and slides:
+        slides, kul = klipe_cevir(slides)
+        if kul:
+            for sl in slides:
+                if sl["tip"] == "cta": sl["veri"] = {**sl["veri"], "maskot": False}
     return {"tarih": bugun.isoformat(), "slot": slot, "konu": konu, "format": fmt, "slides": slides, "post": post, "caption": caption,
             "seed": sira, "tema": tema}

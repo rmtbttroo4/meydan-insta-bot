@@ -25,7 +25,10 @@ def load(name):
 def build(plan, shop, outdir):
     os.makedirs(outdir, exist_ok=True)
     base = os.path.join(outdir, f"{plan['tarih']}_{plan['slot']}_{plan['konu']}")
-    if plan["format"] == "reel":
+    if plan.get("hazir"):  # elle hazirlanmis video (or. Gemini + temiz yazi)
+        import shutil
+        path = base + ".mp4"; shutil.copyfile(os.path.join(ROOT, plan["hazir"]), path)
+    elif plan["format"] == "reel":
         dur = sum(s["sure"] for s in plan["slides"])
         cuts, acc = [], 0
         for s in plan["slides"][:-1]:

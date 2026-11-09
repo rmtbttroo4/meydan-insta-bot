@@ -834,6 +834,66 @@ def slide_kampanya_bandi(im, t, dur, d, shop, C):
         put(im, n, 540, 1520, e * eout(prog(t, 0.9, 0.5)))
 
 
+# =============== GEMINI KLIPLERI (yazisiz Meydi videolari) ===============
+KLIP_DIR = os.path.join(os.path.dirname(HERE), "assets", "klipler")
+
+
+def klip_yolu(ad):
+    for ext in (".mp4", ".mov"):
+        p = os.path.join(KLIP_DIR, ad + ext)
+        if os.path.exists(p): return p
+    return None
+
+
+class _KlipOkuyucu:
+    def __init__(self, path, bas=0.0, W=1080, H=1920):
+        self.W, self.H = W, H; self.n = -1; self.son = None
+        self.p = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-stream_loop", "-1", "-ss", str(bas), "-i", path,
+                                   "-vf", f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps={FPS}",
+                                   "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+
+    def kare(self, i):
+        while self.n < i:
+            raw = self.p.stdout.read(self.W * self.H * 3)
+            if len(raw) < self.W * self.H * 3: break
+            self.son = Image.frombytes("RGB", (self.W, self.H), raw); self.n += 1
+        return self.son
+
+    def kapat(self):
+        try: self.p.kill()
+        except Exception: pass
+
+
+_UST_BANT = None
+
+
+def slide_klip(im, t, dur, d, shop, C):
+    """Gemini klibini arka plan yapar, ustune temiz yazi ve konusma balonu koyar.
+    d = {klip, bas?, ust?, balon?, alt?}"""
+    global _UST_BANT
+    ok = C.get_or("okuyucu", lambda: _KlipOkuyucu(klip_yolu(d["klip"]), d.get("bas", 0.3)))
+    fr = ok.kare(int(t * FPS))
+    if fr is not None: im.paste(fr.convert("RGBA"), (0, 0))
+    if t >= dur - 1.0 / FPS: ok.kapat()
+    if _UST_BANT is None:
+        a = np.ones(560); a[400:] = np.linspace(1, 0, 160)
+        arr = np.zeros((560, 1080, 4), np.uint8); arr[..., :3] = (6, 12, 40); arr[..., 3] = (a[:, None] * 225).astype(np.uint8)
+        _UST_BANT = Image.fromarray(arr, "RGBA")
+    e = env(t, dur, 0.2, 0.2)
+    put(im, _UST_BANT, 0, 0, 1.0, anchor="lt")
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 540, 150, 1.0)
+    if d.get("ust"):
+        u = C.get_or(("ku", d["ust"]), lambda: para_sprite(d["ust"], F(XB, 66), WHITE, 960, gap=6, align="c"))
+        put(im, u, 540, 300, e)
+    if d.get("balon"):
+        from . import maskot
+        b = C.get_or(("kb", d["balon"]), lambda: maskot.balon(d["balon"], 860))
+        p = prog(t, 0.2, 0.35); put(im, b, 540, 820, e * clamp(p * 2), scale=0.5 + 0.5 * eback(p) if p < 1 else 1, anchor="mb")
+    if d.get("alt"):
+        a_ = C.get_or(("ka", d["alt"]), lambda: pill(d["alt"], F(BLACK, 54), WHITE, grad=(PINK, (190, 0, 120)), padx=44, pady=22))
+        put(im, a_, 540, 1780, e * eout(prog(t, 0.6, 0.4)))
+
+
 def slide_maskot(im, t, dur, d, shop, C):
     from . import maskot
     return maskot.slide(im, t, dur, d, shop, C)
@@ -843,7 +903,7 @@ SLIDES = {"intro": slide_intro, "hook": slide_hook, "tariffs": slide_tariffs, "p
           "bullets": slide_bullets, "cta": slide_cta, "sohbet": slide_sohbet, "kinetik": slide_kinetik,
           "sayilar": slide_sayilar, "efsane": slide_efsane, "once_sonra": slide_once_sonra,
           "bildirim": slide_bildirim, "bant": slide_bant, "batarya": slide_batarya, "secim": slide_secim,
-          "maskot": slide_maskot, "fiyat": slide_fiyat, "kampanya_bandi": slide_kampanya_bandi}
+          "maskot": slide_maskot, "fiyat": slide_fiyat, "kampanya_bandi": slide_kampanya_bandi, "klip": slide_klip}
 
 
 def render_reel(slides, shop, out_path, music_path=None, seed=0, workdir=None, theme=None):
