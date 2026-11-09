@@ -4,13 +4,24 @@ import datetime as dt, hashlib, hmac, os, urllib.parse
 import requests
 
 
+def _env(name, default=None):
+    """Gizli kayitlarin basinda/sonunda kalan bosluk ve satir sonlarini temizler."""
+    v = os.environ.get(name)
+    if v is None:
+        if default is None: raise KeyError(f"Eksik ayar: {name}")
+        return default
+    v = v.strip()
+    return v if v or default is None else default
+
+
+
 def _sign(key, msg): return hmac.new(key, msg.encode(), hashlib.sha256).digest()
 
 
 def upload(local_path, key, content_type):
-    account = os.environ["R2_ACCOUNT_ID"]; bucket = os.environ["R2_BUCKET"]
-    ak = os.environ["R2_ACCESS_KEY_ID"]; sk = os.environ["R2_SECRET_ACCESS_KEY"]
-    public_base = os.environ["R2_PUBLIC_BASE_URL"].rstrip("/")
+    account = _env("R2_ACCOUNT_ID"); bucket = _env("R2_BUCKET")
+    ak = _env("R2_ACCESS_KEY_ID"); sk = _env("R2_SECRET_ACCESS_KEY")
+    public_base = _env("R2_PUBLIC_BASE_URL").rstrip("/")
     host = f"{account}.r2.cloudflarestorage.com"
     path = f"/{bucket}/{urllib.parse.quote(key)}"
     data = open(local_path, "rb").read()

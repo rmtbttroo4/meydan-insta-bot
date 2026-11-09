@@ -2,15 +2,26 @@
 import os, time
 import requests
 
+
+def _env(name, default=None):
+    """Gizli kayitlarin basinda/sonunda kalan bosluk ve satir sonlarini temizler."""
+    v = os.environ.get(name)
+    if v is None:
+        if default is None: raise KeyError(f"Eksik ayar: {name}")
+        return default
+    v = v.strip()
+    return v if v or default is None else default
+
+
 # EAA... ile baslayan sistem kullanicisi token'i graph.facebook.com uzerinden calisir.
 # IGAA... ile baslayan Instagram token'i kullanilirsa IG_API_BASE=https://graph.instagram.com/v23.0 yap.
-API = os.environ.get("IG_API_BASE") or "https://graph.facebook.com/v23.0"
+API = _env("IG_API_BASE", "") or "https://graph.facebook.com/v23.0"
 
 
-def _tok(): return os.environ["IG_ACCESS_TOKEN"]
+def _tok(): return _env("IG_ACCESS_TOKEN")
 
 
-def _uid(): return os.environ["IG_USER_ID"]
+def _uid(): return _env("IG_USER_ID")
 
 
 def _check(r):
