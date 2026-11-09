@@ -36,5 +36,12 @@ def upload(local_path, key, content_type):
     sig = hmac.new(k, sts.encode(), hashlib.sha256).hexdigest()
     headers["Authorization"] = f"AWS4-HMAC-SHA256 Credential={ak}/{scope}, SignedHeaders={signed}, Signature={sig}"
     r = requests.put(f"https://{host}{path}", data=data, headers=headers, timeout=120)
-    r.raise_for_status()
+    if r.status_code >= 300:
+        import re
+        code = re.search(r"<Code>(.*?)</Code>", r.text)
+        hint = {"SignatureDoesNotMatch": "R2_SECRET_ACCESS_KEY yanlis (Token value degil, Secret Access Key olmali)",
+                "InvalidAccessKeyId": "R2_ACCESS_KEY_ID yanlis",
+                "AccessDenied": "Token'in bu bucket icin Object Read & Write izni yok",
+                "NoSuchBucket": "R2_BUCKET adi yanlis"}.get(code.group(1) if code else "", "")
+        raise RuntimeError(f"Cloudflare R2 yukleme hatasi {r.status_code} {code.group(1) if code else ''} {hint}\n{r.text[:300]}")
     return f"{public_base}/{urllib.parse.quote(key)}"
