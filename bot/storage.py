@@ -22,6 +22,13 @@ def upload(local_path, key, content_type):
     account = _env("R2_ACCOUNT_ID"); bucket = _env("R2_BUCKET")
     ak = _env("R2_ACCESS_KEY_ID"); sk = _env("R2_SECRET_ACCESS_KEY")
     public_base = _env("R2_PUBLIC_BASE_URL").rstrip("/")
+    # Kontrol: degerleri gostermeden uzunluk ve bicim bilgisi (beklenen: bucket=12, account=32 hex, key id=32 hex, secret=64 hex)
+    import string
+    def _info(v): return f"uzunluk={len(v)} hex={'evet' if v and all(c in string.hexdigits for c in v) else 'hayir'}"
+    print(f"[r2 kontrol] R2_BUCKET {_info(bucket)} dogru_ad={'evet' if bucket == 'meydan-insta' else 'HAYIR'}")
+    print(f"[r2 kontrol] R2_ACCOUNT_ID {_info(account)} (beklenen 32, hex)")
+    print(f"[r2 kontrol] R2_ACCESS_KEY_ID {_info(ak)} (beklenen 32, hex)")
+    print(f"[r2 kontrol] R2_SECRET_ACCESS_KEY {_info(sk)} (beklenen 64, hex)")
     host = f"{account}.r2.cloudflarestorage.com"
     path = f"/{bucket}/{urllib.parse.quote(key)}"
     data = open(local_path, "rb").read()
