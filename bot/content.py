@@ -218,6 +218,90 @@ def slot_for_now(now):
     return "ogle" if now.hour < 15 else "aksam"
 
 
+
+# ---------------- OZEL GUNLER ----------------
+# Bu gunlerde ogle paylasimi yerine sade bir kutlama/anma gorseli paylasilir (satis icermez).
+# Anma gunlerinde aksam Reels'i de sade "gece" temasiyla uretilir.
+OZEL_GUNLER = {
+    "01-01": {"baslik": "Mutlu Yıllar!", "alt": "Yeni yılın sağlık, mutluluk ve huzur getirmesini dileriz.",
+              "caption": "Yeni yılınız kutlu olsun! Sağlık, mutluluk ve huzur dolu bir yıl dileriz. 🎉"},
+    "02-14": {"baslik": "Sevgililer Günü kutlu olsun", "alt": "Sevdiklerinizle nice güzel günlere.",
+              "caption": "Sevgililer Gününüz kutlu olsun! ❤️ Sevdiklerinizle nice güzel günlere."},
+    "03-08": {"baslik": "8 Mart Dünya Kadınlar Günü kutlu olsun", "alt": "Emeği, gücü ve varlığıyla hayatımızı güzelleştiren tüm kadınlara.",
+              "caption": "8 Mart Dünya Kadınlar Günü kutlu olsun! 💐"},
+    "03-18": {"ust": "18 Mart 1915", "baslik": "Çanakkale Zaferi'nin yıl dönümünde", "alt": "Şehitlerimizi rahmet, minnet ve saygıyla anıyoruz.", "anma": True,
+              "caption": "18 Mart Çanakkale Zaferi'nin yıl dönümünde tüm şehitlerimizi rahmet, minnet ve saygıyla anıyoruz. 🇹🇷"},
+    "04-23": {"ust": "23 Nisan", "baslik": "Ulusal Egemenlik ve Çocuk Bayramı kutlu olsun", "alt": "Tüm çocuklarımızın bayramı kutlu olsun!",
+              "caption": "23 Nisan Ulusal Egemenlik ve Çocuk Bayramı kutlu olsun! 🇹🇷🎈"},
+    "05-19": {"ust": "19 Mayıs", "baslik": "Atatürk'ü Anma, Gençlik ve Spor Bayramı kutlu olsun", "alt": "",
+              "caption": "19 Mayıs Atatürk'ü Anma, Gençlik ve Spor Bayramı kutlu olsun! 🇹🇷"},
+    "08-30": {"ust": "30 Ağustos", "baslik": "Zafer Bayramı kutlu olsun", "alt": "",
+              "caption": "30 Ağustos Zafer Bayramı kutlu olsun! 🇹🇷"},
+    "10-29": {"ust": "29 Ekim", "baslik": "Cumhuriyet Bayramı kutlu olsun", "alt": "Cumhuriyetimizin yeni yaşı kutlu olsun!",
+              "caption": "29 Ekim Cumhuriyet Bayramı kutlu olsun! 🇹🇷"},
+    "11-10": {"ust": "10 Kasım 1938", "baslik": "Gazi Mustafa Kemal Atatürk'ü", "alt": "vefatının yıl dönümünde saygı, özlem ve minnetle anıyoruz.", "anma": True,
+              "caption": "Cumhuriyetimizin kurucusu Gazi Mustafa Kemal Atatürk'ü vefatının yıl dönümünde saygı, özlem ve minnetle anıyoruz. 🇹🇷"},
+    "11-24": {"ust": "24 Kasım", "baslik": "Öğretmenler Günü kutlu olsun", "alt": "Emeği geçen tüm öğretmenlerimize teşekkürler.",
+              "caption": "24 Kasım Öğretmenler Günü kutlu olsun! 🍎 Emeği geçen tüm öğretmenlerimize teşekkürler."},
+}
+
+
+def ozel_gun(bugun):
+    """Sabit tarihli gunler + Anneler Gunu (Mayis'in 2. pazari) ve Babalar Gunu (Haziran'in 3. pazari)."""
+    k = bugun.strftime("%m-%d")
+    if k in OZEL_GUNLER: return OZEL_GUNLER[k]
+    if bugun.weekday() == 6 and bugun.month == 5 and 8 <= bugun.day <= 14:
+        return {"baslik": "Anneler Günü kutlu olsun", "alt": "Başta tüm annelerimiz olmak üzere, sevginin en güzel hâline.",
+                "caption": "Anneler Gününüz kutlu olsun! 💐"}
+    if bugun.weekday() == 6 and bugun.month == 6 and 15 <= bugun.day <= 21:
+        return {"baslik": "Babalar Günü kutlu olsun", "alt": "Tüm babalarımızın günü kutlu olsun.",
+                "caption": "Babalar Gününüz kutlu olsun! 👔"}
+    return None
+
+
+# Yeni video turleriyle ek senaryolar
+EK_SENARYOLAR = {
+    "servis": {"reel": [
+        {"slides": [{"tip": "bildirim", "sure": 4.4, "veri": {"ust": "En sevdiğimiz bildirim", "saat": "18:45", "gun": "Bugün", "baslik": "Telefonun hazır!", "metin": "Onarım tamamlandı, mağazamızdan teslim alabilirsin."}},
+                    {"tip": "kinetik", "sure": 2.6, "veri": {"kelimeler": ["Getir", "Bırak", "Teslim al!"], "vurgu": [2]}}],
+         "caption": "Bu bildirimi almak güzel değil mi? 📲 Telefonun bozulduysa getir, onarım bitince haber verelim. Teknik servis için MEYDAN GSM."},
+    ]},
+    "tanitim": {"reel": [
+        {"slides": [{"tip": "bant", "sure": 4.2, "veri": {"kelimeler": ["SIFIR TELEFON", "İKİNCİ EL", "TAKAS", "TEKNİK SERVİS", "HAT İŞLEMLERİ", "AKSESUAR"], "orta": "Hepsi Meydan'da!"}},
+                    {"tip": "intro", "sure": 2.6}],
+         "caption": "Sıfır telefon, ikinci el, takas, teknik servis, hat işlemleri, aksesuar… Altınoluk'ta telefonla ilgili her şey MEYDAN GSM'de!"},
+    ]},
+    "aksesuar": {"reel": [
+        {"slides": [{"tip": "secim", "sure": 4.6, "veri": {"soru": "Telefonun için hangisi?", "a": "Kılıf", "b": "Ekran koruyucu", "cevap": "İKİSİ DE!", "not": "Biri düşmeye, diğeri çizik ve darbeye karşı"}},
+                    {"tip": "kinetik", "sure": 2.4, "veri": {"kelimeler": ["İkisi de", "MEYDAN GSM'de"], "vurgu": [1]}}],
+         "caption": "Kılıf mı, ekran koruyucu mu? İkisi de! Telefonunu tam koru 🛡️ Stok için WhatsApp'tan sorabilirsin."},
+        {"slides": [{"tip": "batarya", "sure": 4.6, "veri": {"ust": "Bataryanın en iyi dostu", "yuzde": 100, "alt": "Uyumlu ve kaliteli şarj aleti"}},
+                    {"tip": "bullets", "sure": 4.6, "veri": {"ust": "Şarj aksesuarları", "baslik": "Doğru şarj, uzun ömür", "maddeler": ["Cihazına uyumlu şarj aleti", "Sağlam kablo", "Araç şarj aleti"]}}],
+         "caption": "Bataryanın en iyi dostu uyumlu bir şarj aleti 🔋 Şarj aleti, kablo ve araç şarjı için MEYDAN GSM'e uğra."},
+    ]},
+    "ikinciel": {"post": [
+        {"tip": "soru", "veri": {"ust": "Sana soruyoruz", "baslik": "Telefonunu ne sıklıkla değiştirirsin?", "secenekler": ["Her 1-2 yılda", "3-4 yılda bir", "Bozulana kadar kullanırım"], "cagri": "Cevabını yorumlara yaz!"},
+         "caption": "Merak ediyoruz: telefonunu ne sıklıkla değiştiriyorsun? 👇 Yorumlara yaz! Değiştirme zamanı geldiyse takas için MEYDAN GSM'deyiz."},
+    ]},
+    "sifir": {"reel": [
+        {"slides": [{"tip": "secim", "sure": 4.6, "veri": {"soru": "Yeni telefonda en önemli ne?", "a": "Kamera", "b": "Batarya", "cevap": "SEN SEÇ!", "not": "Sana uygun modeli birlikte bulalım"}},
+                    {"tip": "sohbet", "sure": 4.4, "veri": {"ust": "Kararsız mısın?", "mesajlar": [M("musteri", "Kamerası iyi bir telefon arıyorum"), M("biz", "Bütçenizi yazın, uygun modelleri hemen iletelim")]}}],
+         "caption": "Kamera mı, batarya mı? Sana uygun telefonu birlikte bulalım 📱 Bütçeni yaz, seçenekleri iletelim."},
+    ]},
+    "ipucu": {"post": [
+        {"tip": "soru", "veri": {"ust": "Sana soruyoruz", "baslik": "Telefonunu gece şarjda bırakır mısın?", "secenekler": ["Evet, her gece", "Bazen", "Hayır, gündüz şarj ederim"], "cagri": "Cevabını yorumlara yaz!"},
+         "caption": "Sen hangisisin? 👇 Yorumlara yaz! Şarj alışkanlıkları hakkında merak ettiklerini mağazamızda sorabilirsin."},
+    ]},
+    "hat": {"reel": [
+        {"slides": [{"tip": "bildirim", "sure": 4.4, "veri": {"ust": "Numaran aynı, operatörün yeni", "saat": "10:30", "gun": "Bugün", "baslik": "Hattın aktif!", "metin": "Numara taşıma işlemin tamamlandı. Türk Telekom'a hoş geldin!"}},
+                    {"tip": "sayilar", "sure": 5.0, "veri": {"baslik": "Numara taşıma 3 adımda", "maddeler": ["Kimliğinle mağazaya gel", "Sana uygun tarifeyi seçelim", "İşlemleri birlikte tamamlayalım"]}}],
+         "caption": "Numaranı değiştirmeden Türk Telekom'a geç! 📶 Kimliğinle gel, numara taşıma işlemini birlikte yapalım."},
+    ]},
+}
+for _k, _v in EK_SENARYOLAR.items():
+    for _f in ("reel", "post"):
+        SENARYOLAR.setdefault(_k, {}).setdefault(_f, []).extend(_v.get(_f, []))
+
 def _sira_no(bugun, takvim, konu, slot):
     """Bu konunun bu slotta kacinci kez geldigi: haftada iki kez gelen konu (or. ipucu) her seferinde farkli icerik alir."""
     gunler = [g for g in GUNLER if takvim["gunler"][g][slot] == konu] or [gun_adi(bugun)]
@@ -238,6 +322,13 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
     sira = bugun.toordinal() * 2 + (1 if slot == "aksam" else 0)  # muzik ve arka plan tohumu
     tema = TEMALAR[sira % len(TEMALAR)]
     hafta = bugun.toordinal() // 7
+
+    og = None if zorla_konu else ozel_gun(bugun)
+    if og and og.get("anma"): tema = "gece"
+    if og and fmt == "post" and slot == "ogle":
+        caption = f"{og['caption']}\n\n{shop['name_main']} {shop['name_accent']} · {shop['district']}"
+        return {"tarih": bugun.isoformat(), "slot": slot, "konu": "ozelgun", "format": "post", "slides": None,
+                "post": {"tip": "ozel_gun", "veri": og}, "caption": caption, "seed": sira, "tema": tema}
 
     if konu in ("tarife", "turbobox") and not kampanya_gecerli(kampanyalar.get(konu), bugun):
         konu = takvim.get("yedekler", {}).get(konu, "tanitim")

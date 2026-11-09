@@ -652,9 +652,121 @@ def slide_once_sonra(im, t, dur, d, shop, C):
     put(im, s, 540, 1700, e * pin)
 
 
+# =============== YARATICI SLAYTLAR 2 ===============
+def slide_bildirim(im, t, dur, d, shop, C):
+    """Kilit ekraninda MEYDAN GSM bildirimi duser. d = {ust?, saat, baslik, metin}"""
+    e = env(t, dur)
+    if d.get("ust"):
+        u = C.get_or(("bu", d["ust"]), lambda: para_sprite(d["ust"], F(XB, 64), WHITE, 940, gap=6, align="c"))
+        put(im, u, 540, 250, e * eout(prog(t, 0, 0.45)))
+    W_, H_ = 740, 1380
+    def base():
+        body, (sx, sy, sw, shh) = phone_body(W_, H_)
+        scr = hgrad(sw, shh, THEME["top"], THEME["bot"])
+        ov = Image.new("RGBA", (sw, shh), (0, 0, 0, 0)); dd = ImageDraw.Draw(ov)
+        for k in range(5):
+            dd.ellipse((-200 + k * 160, shh * 0.5 + k * 40, 500 + k * 160, shh * 0.5 + 700 + k * 40), fill=THEME["blobs"][k % 3] + (40,))
+        scr.alpha_composite(ov.filter(ImageFilter.GaussianBlur(30)))
+        ck = text_sprite(d.get("saat", "19:00"), F(BLACK, 190), WHITE, pad=0); scr.alpha_composite(ck, ((sw - ck.width) // 2, 200))
+        dt_ = text_sprite(d.get("gun", "Bugün"), F(SEMI, 42), (230, 235, 255), pad=0); scr.alpha_composite(dt_, ((sw - dt_.width) // 2, 140))
+        scr.putalpha(_round_mask(sw, shh, 74)); body.alpha_composite(scr, (sx, sy))
+        ImageDraw.Draw(body).rounded_rectangle((sx + sw // 2 - 70, sy + 18, sx + sw // 2 + 70, sy + 50), 16, fill=(14, 16, 26))
+        return body, (sx, sy, sw, shh)
+    body, (sx, sy, sw, shh) = C.get_or("bb", base)
+    def note():
+        w = sw - 50
+        t1 = text_sprite(d["baslik"], fit_font(d["baslik"], BLACK, 44, w - 70), INK, pad=0)
+        t2 = para_sprite(d["metin"], F(MED, 38), (60, 70, 100), w - 70, gap=6)
+        h = 40 + 56 + 14 + t1.height + 10 + t2.height + 36
+        c = Image.new("RGBA", (w, h), (0, 0, 0, 0)); ImageDraw.Draw(c).rounded_rectangle((0, 0, w - 1, h - 1), 40, fill=(250, 251, 255, 245))
+        av = hgrad(56, 56, BLUE, CYAN); av.putalpha(_round_mask(56, 56, 14)); c.alpha_composite(av, (34, 34))
+        m = text_sprite("M", F(BLACK, 32), WHITE, pad=0); c.alpha_composite(m, (34 + (56 - m.width) // 2, 34 + (56 - m.height) // 2))
+        c.alpha_composite(text_sprite("MEYDAN GSM  ·  şimdi", F(SEMI, 30), (90, 100, 130), pad=0), (106, 48))
+        c.alpha_composite(t1, (34, 110)); c.alpha_composite(t2, (34, 110 + t1.height + 10))
+        return c
+    nt = C.get_or("bn", note)
+    ph = body.copy()
+    p = eback(prog(t, 1.0, 0.55)) if t < 1.55 else 1
+    if t >= 1.0:
+        paste_clip(ph, nt, sx + 25, int(sy + 470 - (1 - p) * 500))
+    pin = eout(prog(t, 0, 0.6))
+    put(im, ph, 540 + (math.sin(t * 60) * 5 if 1.0 < t < 1.4 else 0), 1110 + (1 - pin) * 700, e)
+
+
+def slide_bant(im, t, dur, d, shop, C):
+    """Capraz kayan yazi bantlari + ortada mesaj. d = {kelimeler:[...], orta}"""
+    e = env(t, dur)
+    def strip(i):
+        txt = "   •   ".join(d["kelimeler"]) + "   •   "
+        fg, bg = [(INK, CYAN), (WHITE, PINK), (INK, (255, 255, 255))][i % 3]
+        one = text_sprite(txt, F(BLACK, 100), fg, pad=0)
+        s = Image.new("RGBA", (one.width * 3, 170), bg + (255,))
+        for k in range(3): s.alpha_composite(one, (k * one.width, (170 - one.height) // 2))
+        return s, one.width
+    for i, (y, ang, sp) in enumerate([(560, -8, 260), (960, 6, -220), (1360, -5, 300)]):
+        s, ow = C.get_or(("st", i), lambda i=i: strip(i))
+        off = int((t * sp) % ow)
+        cr = s.crop((off, 0, off + 1500, 170)).rotate(ang, expand=True, resample=Image.BICUBIC)
+        pin = eout(prog(t, i * 0.12, 0.5))
+        put(im, cr, 540 + (1 - pin) * (1400 if i % 2 else -1400), y, e)
+    if d.get("orta"):
+        o = C.get_or("bo", lambda: pill(d["orta"], F(BLACK, 72), WHITE, padx=50, pady=30, grad=(BLUE, (0, 150, 230))))
+        p = prog(t, 0.8, 0.5)
+        put(im, o, 540, 1720, e * eout(p), scale=0.6 + 0.4 * eback(p) if p < 1 else 1 + 0.03 * math.sin(t * 6))
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 80, 250, e, anchor="lm")
+
+
+def slide_batarya(im, t, dur, d, shop, C):
+    """Pil dolar, yuzde sayar. d = {ust, yuzde, alt}"""
+    e = env(t, dur)
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 80, 250, e, anchor="lm")
+    u = C.get_or(("au", d["ust"]), lambda: para_sprite(d["ust"], F(XB, 70), WHITE, 940, gap=4, align="c"))
+    put(im, u, 540, 420, e * eout(prog(t, 0, 0.4)))
+    bw, bh = 400, 760; x0, y0 = 540 - bw // 2, 620
+    lv = eout(prog(t, 0.4, max(0.5, dur - 1.6))) * d.get("yuzde", 100) / 100
+    lay = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0)); dd = ImageDraw.Draw(lay)
+    dd.rounded_rectangle((540 - 70, y0 - 50, 540 + 70, y0 + 10), 18, fill=(255, 255, 255, 230))
+    dd.rounded_rectangle((x0, y0, x0 + bw, y0 + bh), 60, outline=(255, 255, 255, 240), width=14)
+    fh = int((bh - 56) * lv)
+    if fh > 4:
+        col_ = (40, 210, 120) if lv > 0.5 else ((255, 190, 0) if lv > 0.2 else (240, 60, 80))
+        dd.rounded_rectangle((x0 + 28, y0 + bh - 28 - fh, x0 + bw - 28, y0 + bh - 28), 36, fill=col_ + (255,))
+    pct = text_sprite(f"%{int(round(lv * 100))}", F(BLACK, 130), WHITE, pad=0)
+    lay.alpha_composite(pct, (540 - pct.width // 2, y0 + bh // 2 - pct.height // 2))
+    put(im, lay, 0, 0, e, anchor="lt")
+    if d.get("alt"):
+        a = C.get_or(("aa", d["alt"]), lambda: para_sprite(d["alt"], F(BOLD, 54), WHITE, 940, align="c"))
+        put(im, a, 540, 1560, e * eout(prog(t, dur * 0.5, 0.5)))
+
+
+def slide_secim(im, t, dur, d, shop, C):
+    """A mi B mi? Cevap damgasi. d = {soru, a, b, cevap}"""
+    e = env(t, dur)
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 80, 250, e, anchor="lm")
+    q = C.get_or(("sq", d["soru"]), lambda: para_sprite(d["soru"], F(XB, 76), WHITE, 940, gap=6, align="c"))
+    put(im, q, 540, 470, e * eout(prog(t, 0, 0.45)))
+    for i, key in enumerate(("a", "b")):
+        def mk(key=key, i=i):
+            c, pad = card(900, 240, 48, grad=(BLUE, CYAN) if i == 0 else (PINK, (130, 30, 200)))
+            lb = text_sprite(key.upper(), F(BLACK, 110), (255, 255, 255, 120), pad=0); c.alpha_composite(lb, (pad + 50, pad + (240 - lb.height) // 2))
+            tx = text_sprite(d[key], fit_font(d[key], BLACK, 74, 640), WHITE, pad=0); c.alpha_composite(tx, (pad + 200, pad + (240 - tx.height) // 2))
+            return c
+        c = C.get_or(("sc", i), mk); p = eout(prog(t, 0.4 + i * 0.25, 0.5))
+        put(im, c, 540 + (1 - p) * (1100 if i else -1100), 860 + i * 300, e * p)
+    mid = dur * 0.55
+    if t > mid:
+        st = C.get_or("ss", lambda: pill(d["cevap"], F(BLACK, 96), INK, (255, 255, 255), padx=60, pady=30))
+        p = prog(t, mid, 0.4); st2 = st.rotate(-7, expand=True, resample=Image.BICUBIC)
+        put(im, st2, 540, 1010, e, scale=2.2 - 1.2 * eout(p))
+    if d.get("not") and t > mid + 0.4:
+        n = C.get_or("sn", lambda: para_sprite(d["not"], F(BOLD, 48), SOFT, 940, align="c"))
+        put(im, n, 540, 1560, e * eout(prog(t, mid + 0.4, 0.5)))
+
+
 SLIDES = {"intro": slide_intro, "hook": slide_hook, "tariffs": slide_tariffs, "plans": slide_plans,
           "bullets": slide_bullets, "cta": slide_cta, "sohbet": slide_sohbet, "kinetik": slide_kinetik,
-          "sayilar": slide_sayilar, "efsane": slide_efsane, "once_sonra": slide_once_sonra}
+          "sayilar": slide_sayilar, "efsane": slide_efsane, "once_sonra": slide_once_sonra,
+          "bildirim": slide_bildirim, "bant": slide_bant, "batarya": slide_batarya, "secim": slide_secim}
 
 
 def render_reel(slides, shop, out_path, music_path=None, seed=0, workdir=None, theme=None):
@@ -693,10 +805,34 @@ def render_reel(slides, shop, out_path, music_path=None, seed=0, workdir=None, t
 
 
 # =============== POST (4:5, 1080x1350) ===============
+def _render_ozel_gun(v, shop, out_path, seed=0):
+    """Ozel gun / anma gonderisi: sade, satis icermez. v = {ust?, baslik, alt?, anma?}"""
+    W, H = 1080, 1350
+    if v.get("anma"):
+        arr = np.zeros((H, W, 3), np.uint8); yy = np.linspace(0, 1, H)[:, None]
+        arr[...] = (np.array([18, 18, 22]) * (1 - yy[..., None]) + np.array([4, 4, 6]) * yy[..., None]).astype(np.uint8)
+        im = Image.fromarray(arr, "RGB").convert("RGBA"); acc = (200, 205, 215)
+    else:
+        im = Background(W, H, seed).frame(2.0); acc = CYAN
+    lay = Image.new("RGBA", (W, H * 2), (0, 0, 0, 0)); y = 0
+    if v.get("ust"):
+        u = text_sprite(v["ust"], fit_font(v["ust"], BOLD, 46, 900), acc, pad=0); put(lay, u, 540, y, anchor="mt"); y += u.height + 40
+    ln = Image.new("RGBA", (220, 6), acc + (255,)); put(lay, ln, 540, y, anchor="mt"); y += 60
+    tt = para_sprite(v["baslik"], F(BLACK, 104 if not v.get("anma") else 92), WHITE, 940, gap=16, align="c"); put(lay, tt, 540, y, anchor="mt"); y += tt.height + 50
+    if v.get("alt"):
+        a = para_sprite(v["alt"], F(MED, 44), (215, 220, 235), 900, gap=12, align="c"); put(lay, a, 540, y, anchor="mt"); y += a.height
+    im.alpha_composite(lay.crop((0, 0, W, y)), (0, max(120, (H - 180 - y) // 2)))
+    lg = row([text_sprite(shop["name_main"], F(BLACK, 54)), text_sprite(shop["name_accent"], F(BLACK, 54), acc if v.get("anma") else CYAN)], gap=6)
+    put(im, lg, 540, H - 110)
+    im.convert("RGB").save(out_path, "JPEG", quality=92)
+
+
 def render_post(d, shop, out_path, seed=0, theme=None):
     """d = {tip: 'tariffs'|'plans'|'bullets'|'tanitim'|'sohbet'|'sayilar'|'efsane', ...}"""
-    set_theme(theme)
+    set_theme("gece" if d.get("veri", {}).get("anma") else theme)
     W, H = 1080, 1350
+    if d["tip"] == "ozel_gun":
+        return _render_ozel_gun(d["veri"], shop, out_path, seed)
     canvas = Background(W, H, seed).frame(2.0)
     put(canvas, brand_small(shop, 42), 70, 90, anchor="lm")
     kind = d["tip"]; v = d["veri"]
@@ -755,6 +891,14 @@ def render_post(d, shop, out_path, seed=0, theme=None):
     elif kind == "efsane":
         for lab, txt, gr in (("EFSANE", v["efsane"], (PINK, (150, 20, 90))), ("GERÇEK", v["gercek"], (GREEN, (0, 110, 120)))):
             c = _myth_card(lab, txt, gr, 940, fs=44); put(im, c, 540, y + c.height / 2 - 40); y += c.height - 70
+    elif kind == "soru":
+        for i, m in enumerate(v["secenekler"][:4]):
+            c, pad = card(940, 150, 34)
+            lb = pill("ABCD"[i], F(BLACK, 54), WHITE, grad=(BLUE, CYAN), padx=30, pady=14)
+            c.alpha_composite(lb, (pad + 30, pad + (150 - lb.height) // 2))
+            tx = text_sprite(m, fit_font(m, BOLD, 50, 720), INK, pad=0); c.alpha_composite(tx, (pad + 170, pad + (150 - tx.height) // 2))
+            put(im, c, 70 - pad, y - pad, anchor="lt"); y += 150 + 22
+        y += 10; put(im, text_sprite(v.get("cagri", "Cevabını yorumlara yaz!"), F(XB, 46), CYAN), 540, y + 30); y += 90
     elif kind == "tanitim":
         c = info_card(shop, 940); put(im, c, 540, y + c.height / 2 - 40); y += c.height - 40
     if v.get("not"):
