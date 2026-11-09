@@ -1,17 +1,47 @@
 {
   "_aciklama": "Her gun iki paylasim: ogle (12:00, gorsel gonderi) ve aksam (19:00, Reels). Kampanya konusu (tarife/turbobox) suresi dolmussa 'yedekler' listesindeki konu kullanilir. Konular: tarife, turbobox, hat, servis, ikinciel, sifir, aksesuar, ipucu, tanitim",
   "slotlar": {
-    "ogle":  {"saat": "12:00", "format": "post"},
-    "aksam": {"saat": "19:00", "format": "reel"}
+    "ogle": {
+      "saat": "12:00",
+      "format": "post"
+    },
+    "aksam": {
+      "saat": "19:00",
+      "format": "reel"
+    }
   },
   "gunler": {
-    "pazartesi": {"ogle": "ipucu",    "aksam": "tarife"},
-    "sali":      {"ogle": "tarife",   "aksam": "ikinciel"},
-    "carsamba":  {"ogle": "aksesuar", "aksam": "turbobox"},
-    "persembe":  {"ogle": "turbobox", "aksam": "servis"},
-    "cuma":      {"ogle": "ipucu",    "aksam": "aksesuar"},
-    "cumartesi": {"ogle": "ikinciel", "aksam": "sifir"},
-    "pazar":     {"ogle": "servis",   "aksam": "tanitim"}
+    "pazartesi": {
+      "ogle": "ipucu",
+      "aksam": "tarife"
+    },
+    "sali": {
+      "ogle": "hat",
+      "aksam": "sifir"
+    },
+    "carsamba": {
+      "ogle": "aksesuar",
+      "aksam": "turbobox"
+    },
+    "persembe": {
+      "ogle": "tarife",
+      "aksam": "servis"
+    },
+    "cuma": {
+      "ogle": "ipucu",
+      "aksam": "aksesuar"
+    },
+    "cumartesi": {
+      "ogle": "turbobox",
+      "aksam": "ikinciel"
+    },
+    "pazar": {
+      "ogle": "servis",
+      "aksam": "tanitim"
+    }
   },
-  "yedekler": {"tarife": "hat", "turbobox": "sifir"}
+  "yedekler": {
+    "tarife": "hat",
+    "turbobox": "sifir"
+  }
 }

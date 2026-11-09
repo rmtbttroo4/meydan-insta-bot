@@ -14,6 +14,22 @@ SEMI = "Inter-SemiBold"; MED = "Inter-Medium"
 NAVY = (10, 28, 92); BLUE = (22, 76, 210); CYAN = (0, 190, 240); PINK = (236, 30, 110)
 WHITE = (255, 255, 255); GRAY = (130, 140, 165); INK = (14, 24, 64); SOFT = (200, 215, 255)
 
+# Renk temalari: marka rengi (CYAN, "GSM") sabit kalir; arka plan, isik lekeleri ve ikinci vurgu rengi degisir.
+THEMES = {
+    "mavi":      {"top": (7, 20, 72),  "bot": (20, 70, 200),  "blobs": [CYAN, (120, 60, 255), (236, 30, 110)], "pink": (236, 30, 110)},
+    "gece":      {"top": (3, 6, 20),   "bot": (16, 28, 72),   "blobs": [CYAN, (0, 110, 255), (120, 60, 255)],  "pink": (236, 30, 110)},
+    "mor":       {"top": (26, 6, 64),  "bot": (104, 28, 168), "blobs": [(255, 80, 180), CYAN, (120, 60, 255)], "pink": (255, 60, 150)},
+    "turkuaz":   {"top": (0, 32, 52),  "bot": (0, 112, 140),  "blobs": [(0, 230, 200), (0, 120, 255), (255, 190, 0)], "pink": (255, 120, 0)},
+    "gunbatimi": {"top": (36, 8, 58),  "bot": (196, 56, 84), "blobs": [(255, 150, 0), (255, 60, 120), CYAN], "pink": (255, 140, 0)},
+}
+THEME = THEMES["mavi"]
+
+
+def set_theme(name):
+    """Tema secer; ikinci vurgu rengi (PINK) slaytlarda temaya gore degisir."""
+    global THEME, PINK
+    THEME = THEMES.get(name or "mavi", THEMES["mavi"]); PINK = THEME["pink"]
+
 
 @lru_cache(None)
 def F(name, size):
@@ -147,11 +163,12 @@ class Background:
         rng = np.random.default_rng(seed)
         y = np.linspace(0, 1, H)[:, None]; x = np.linspace(0, 1, W)[None, :]
         k = np.clip(0.65 * y + 0.35 * x, 0, 1)
-        top = np.array([7, 20, 72]); bot = np.array([20, 70, 200])
+        top = np.array(THEME["top"]); bot = np.array(THEME["bot"])
         arr = top * (1 - k[..., None]) + bot * k[..., None]
         self.base = Image.fromarray(arr.astype(np.uint8), "RGB").convert("RGBA")
         self.blobs = []
-        for color, r, a in [(CYAN, 520, 0.38), ((120, 60, 255), 600, 0.30), (PINK, 420, 0.20)]:
+        b1, b2, b3 = THEME["blobs"]
+        for color, r, a in [(b1, 520, 0.38), (b2, 600, 0.30), (b3, 420, 0.20)]:
             self.blobs.append((self._blob(r, color, a), rng.uniform(0.5, 1.2), rng.uniform(0.1, 0.9) * W, rng.uniform(0.15, 0.9) * H))
         st = Image.new("RGBA", (W * 2, H), (0, 0, 0, 0)); d = ImageDraw.Draw(st)
         for x0, w, a in [(200, 60, 22), (520, 14, 40), (900, 110, 14), (1400, 30, 30), (1750, 70, 18)]:
@@ -402,12 +419,247 @@ def slide_cta(im, t, dur, d, shop, C):
     put(im, btn, 540, 1420, eout(p) * e, scale=1 + 0.035 * math.sin((t - 1.7) * 6) if p >= 1 else 0.6 + 0.4 * eback(p))
 
 
+# =============== YARATICI SLAYTLAR ===============
+GREEN = (0, 170, 110)
+
+
+def _round_mask(w, h, r):
+    m = Image.new("L", (w, h), 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, w - 1, h - 1), r, fill=255); return m
+
+
+def phone_body(w, h):
+    """Telefon govdesi; ekranin (x, y, w, h) kutusunu da dondurur."""
+    im = Image.new("RGBA", (w + 80, h + 80), (0, 0, 0, 0))
+    sh = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rounded_rectangle((40, 58, 40 + w, 58 + h), 96, fill=(0, 0, 20, 150))
+    im.alpha_composite(sh.filter(ImageFilter.GaussianBlur(24)))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((40, 40, 40 + w, 40 + h), 96, fill=(14, 16, 26), outline=(90, 100, 130), width=4)
+    b = 22
+    return im, (40 + b, 40 + b, w - 2 * b, h - 2 * b)
+
+
+def chat_screen(sw, sh, msgs, n, typing, scale=1.0):
+    """Mesajlasma ekrani (marka/uygulama logosu yok): ilk n mesaj gorunur, typing=True ise 'yaziyor' balonu."""
+    s = scale; top = int(64 * s); hh = int(160 * s) + top
+    im = Image.new("RGBA", (sw, sh), (234, 239, 247, 255)); d = ImageDraw.Draw(im)
+    fnt = F(MED, int(46 * s)); maxw = int(sw * 0.74); bubbles = []
+    for msg in msgs[:n]:
+        me = msg["kim"] == "biz"
+        t = para_sprite(msg["metin"], fnt, INK, maxw - int(60 * s), gap=int(8 * s))
+        bw, bh = t.width + int(60 * s), t.height + int(48 * s)
+        b = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
+        ImageDraw.Draw(b).rounded_rectangle((0, 0, bw - 1, bh - 1), int(36 * s), fill=(206, 238, 255) if me else WHITE)
+        b.alpha_composite(t, (int(30 * s), int(24 * s))); bubbles.append((b, me))
+    if typing:
+        b = Image.new("RGBA", (int(160 * s), int(90 * s)), (0, 0, 0, 0)); bd = ImageDraw.Draw(b)
+        bd.rounded_rectangle((0, 0, b.width - 1, b.height - 1), int(36 * s), fill=(206, 238, 255))
+        for k in range(3):
+            cx = int((45 + k * 35) * s); bd.ellipse((cx - int(10 * s), int(35 * s), cx + int(10 * s), int(55 * s)), fill=(70, 110, 170))
+        bubbles.append((b, True))
+    total = sum(b.height + int(24 * s) for b, _ in bubbles)
+    y = hh + int(36 * s); room = sh - y - int(36 * s)
+    if total > room: y -= total - room
+    for b, me in bubbles:
+        x = sw - b.width - int(28 * s) if me else int(28 * s)
+        paste_clip(im, b, x, y); y += b.height + int(24 * s)
+    # baslik (ustten kayan balonlarin ustune cizilir)
+    d.rectangle((0, 0, sw, hh), fill=(255, 255, 255)); d.line((0, hh, sw, hh), fill=(220, 225, 235), width=2)
+    av = hgrad(int(90 * s), int(90 * s), BLUE, CYAN); av.putalpha(_round_mask(av.width, av.height, av.width // 2))
+    ay = top + int(36 * s); im.alpha_composite(av, (int(32 * s), ay))
+    m = text_sprite("M", F(BLACK, int(46 * s)), WHITE, pad=0)
+    im.alpha_composite(m, (int(32 * s) + (av.width - m.width) // 2, ay + (av.height - m.height) // 2))
+    im.alpha_composite(text_sprite("MEYDAN GSM", F(BLACK, int(42 * s)), INK, pad=0), (int(142 * s), ay + int(4 * s)))
+    d.ellipse((int(144 * s), ay + int(62 * s), int(160 * s), ay + int(78 * s)), fill=(40, 200, 110))
+    im.alpha_composite(text_sprite("çevrimiçi", F(MED, int(30 * s)), (90, 100, 130), pad=0), (int(170 * s), ay + int(54 * s)))
+    return im
+
+
+def phone_with_screen(w, h, screen):
+    body, (sx, sy, sw, shh) = phone_body(w, h)
+    scr = screen.resize((sw, shh)) if screen.size != (sw, shh) else screen
+    scr = scr.copy(); scr.putalpha(_round_mask(sw, shh, 74))
+    body.alpha_composite(scr, (sx, sy))
+    ImageDraw.Draw(body).rounded_rectangle((sx + sw // 2 - 70, sy + 18, sx + sw // 2 + 70, sy + 50), 16, fill=(14, 16, 26))
+    return body
+
+
+def _chat_timeline(msgs, start=0.6, gap=1.2, typing=0.75):
+    """Her mesajin gorundugu an ve 'yaziyor' araliklari."""
+    t, out = start, []
+    for m in msgs:
+        if m["kim"] == "biz":
+            out.append(("typing", t)); t += typing
+        out.append(("msg", t)); t += gap
+    return out
+
+
+def slide_sohbet(im, t, dur, d, shop, C):
+    """Telefon ekraninda canli mesajlasma. d = {ust, mesajlar:[{kim:'musteri'|'biz', metin}]}"""
+    e = env(t, dur)
+    if d.get("ust"):
+        u = C.get_or(("s_u", d["ust"]), lambda: para_sprite(d["ust"], F(XB, 64), WHITE, 940, gap=6, align="c"))
+        p = eout(prog(t, 0.05, 0.45)); put(im, u, 540, 250 + (1 - p) * 30, p * e)
+    msgs = d["mesajlar"]; tl = _chat_timeline(msgs)
+    n, typing, last = 0, False, 0.0
+    for kind, at in tl:
+        if t >= at:
+            last = at
+            if kind == "msg": n += 1; typing = False
+            else: typing = True
+    W_, H_ = 740, 1380
+    _, (sx, sy, sw, shh) = phone_body(W_, H_)
+    def mk(n=n, typing=typing):
+        return phone_with_screen(W_, H_, chat_screen(sw, shh, msgs, n, typing))
+    cur = C.get_or(("ph", n, typing), mk)
+    a = clamp((t - last) / 0.18) if last > 0 else 1
+    if a < 1 and (n, typing) != (0, False):
+        pn, pt = 0, False
+        for kind, at in tl:
+            if at < last:
+                if kind == "msg": pn += 1; pt = False
+                else: pt = True
+        prev = C.get_or(("ph", pn, pt), lambda: phone_with_screen(W_, H_, chat_screen(sw, shh, msgs, pn, pt)))
+        cur = Image.blend(prev, cur, a)
+    p = eout(prog(t, 0.0, 0.6))
+    put(im, cur, 540, 1110 + (1 - p) * 700, e)
+
+
+def slide_kinetik(im, t, dur, d, shop, C):
+    """Ifadeler tek tek, ekrani dolduran buyuk yazilarla. d = {kelimeler:[...], vurgu:[index], alt?}"""
+    ws = d["kelimeler"]; n = len(ws); per = dur / n
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 80, 250, env(t, dur), anchor="lm")
+    i = min(n - 1, int(t / per)); lt = t - i * per
+    txt = ws[i]; hl = i in d.get("vurgu", [n - 1])
+    def mk(txt=txt, hl=hl):
+        lines = wrap(txt, F(BLACK, 170), 940)
+        size = 190 if len(lines) == 1 else 150
+        sp = para_sprite(txt, F(BLACK, size), WHITE if not hl else INK, 960, gap=0, align="c")
+        if sp.width > 980: sp = sp.resize((980, int(sp.height * 980 / sp.width)), Image.LANCZOS)
+        if not hl: return sp
+        bg = Image.new("RGBA", (sp.width + 80, sp.height + 50), (0, 0, 0, 0))
+        g = hgrad(bg.width, bg.height, CYAN, (255, 255, 255)); g.putalpha(_round_mask(bg.width, bg.height, 36))
+        bg.alpha_composite(g); bg.alpha_composite(sp, (40, 25)); return bg
+    sp = C.get_or(("k", i), mk)
+    pin = eout(prog(lt, 0, 0.28)); pout = prog(lt, per - 0.14, 0.14) if i < n - 1 else prog(t, dur - 0.3, 0.3)
+    sc = (1 + min(0.35, max(0.0, 1040 / sp.width - 1)) * (1 - pin)) * (1 - 0.08 * pout)
+    put(im, sp, 540 + math.sin(lt * 40) * 6 * (1 - pin), 900, clamp(pin * 1.6) * (1 - pout), scale=sc)
+    if d.get("alt"):
+        a = C.get_or(("ka", d["alt"]), lambda: para_sprite(d["alt"], F(BOLD, 48), SOFT, 900, align="c"))
+        put(im, a, 540, 1330, env(t, dur) * eout(prog(t, 0.3, 0.5)))
+    # ilerleme noktalari
+    for k in range(n):
+        r = 11 if k == i else 8
+        dot = Image.new("RGBA", (r * 2, r * 2), (0, 0, 0, 0))
+        ImageDraw.Draw(dot).ellipse((0, 0, r * 2 - 1, r * 2 - 1), fill=(CYAN if k <= i else (255, 255, 255)) + ((255,) if k <= i else (90,)))
+        put(im, dot, 540 + (k - (n - 1) / 2) * 44, 1560, env(t, dur))
+
+
+def slide_sayilar(im, t, dur, d, shop, C):
+    """Numarali adimlar, her biri kendi ekraninda. d = {baslik, maddeler:[...]}"""
+    e = env(t, dur)
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 80, 250, e, anchor="lm")
+    hd = C.get_or(("sb", d["baslik"]), lambda: para_sprite(d["baslik"], F(XB, 76), WHITE, 940, gap=4))
+    put(im, hd, 80, 360, e * eout(prog(t, 0, 0.4)), anchor="lt")
+    items = d["maddeler"]; n = len(items); st = 0.5; per = (dur - st) / n
+    i = max(0, min(n - 1, int((t - st) / per))); lt = t - st - i * per
+    num = C.get_or(("sn", i), lambda: text_sprite(str(i + 1), F(BLACK, 560), CYAN, pad=0))
+    tx = C.get_or(("st", i), lambda: para_sprite(items[i], F(BOLD, 68), WHITE, 900, gap=8, align="c"))
+    pin = eout(prog(lt, 0, 0.35)) if t >= st else 0
+    pout = prog(lt, per - 0.18, 0.18) if i < n - 1 else 0
+    x = 540 + (1 - pin) * 500 - pout * 500; a = pin * (1 - pout) * e
+    put(im, num, x, 960, a, scale=0.8 + 0.2 * pin)
+    put(im, tx, x, 1380, a)
+    for k in range(n):
+        seg = Image.new("RGBA", (int(900 / n) - 16, 10), (0, 0, 0, 0))
+        ImageDraw.Draw(seg).rounded_rectangle((0, 0, seg.width - 1, 9), 5, fill=(CYAN + (255,)) if k <= i and t >= st else (255, 255, 255, 70))
+        put(im, seg, 90 + k * (900 / n), 1640, e, anchor="lm")
+
+
+def _myth_card(label, txt, grad, w=900, fs=58):
+    lab = pill(label, F(BLACK, int(fs * 0.72)), WHITE, (0, 0, 0, 70), padx=30, pady=12)
+    body = para_sprite(txt, F(BOLD, fs), WHITE, w - 120, gap=10)
+    h = 60 + lab.height + 30 + body.height + 60
+    c, pad = card(w, h, 48, grad=grad, shadow=90)
+    c.alpha_composite(lab, (pad + 60, pad + 50)); c.alpha_composite(body, (pad + 60, pad + 50 + lab.height + 30))
+    return c
+
+
+def slide_efsane(im, t, dur, d, shop, C):
+    """Efsane mi gercek mi: kart doner. d = {ust?, efsane, gercek}"""
+    e = env(t, dur)
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 80, 250, e, anchor="lm")
+    u = C.get_or(("eu", d.get("ust")), lambda: para_sprite(d.get("ust", "Doğru bilinen yanlış"), F(XB, 76), WHITE, 940, gap=4, align="c"))
+    put(im, u, 540, 440, e * eout(prog(t, 0, 0.4)))
+    front = C.get_or("ef", lambda: _myth_card("EFSANE", d["efsane"], (PINK, (150, 20, 90))))
+    back = C.get_or("eg", lambda: _myth_card("GERÇEK", d["gercek"], (GREEN, (0, 110, 120))))
+    mid = dur * 0.45; ft = prog(t, mid - 0.2, 0.4)
+    sx = abs(math.cos(ft * math.pi)); card_ = front if ft < 0.5 else back
+    sp = card_.resize((max(1, int(card_.width * sx)), card_.height)) if sx < 0.999 else card_
+    pin = eout(prog(t, 0.2, 0.5))
+    put(im, sp, 540, 1060 + (1 - pin) * 300, e * pin)
+    if t > mid + 0.3 and d.get("not"):
+        n = C.get_or("en", lambda: para_sprite(d["not"], F(MED, 40), SOFT, 900, align="c"))
+        put(im, n, 540, 1560, e * eout(prog(t, mid + 0.3, 0.5)))
+
+
+def _phone_front(w, h, broken, seed=3):
+    body, (sx, sy, sw, shh) = phone_body(w, h)
+    if broken:
+        scr = hgrad(sw, shh, (40, 44, 58), (18, 20, 30))
+        d = ImageDraw.Draw(scr); rng = np.random.default_rng(seed); cx, cy = sw * 0.38, shh * 0.32
+        for k in range(13):
+            ang = rng.uniform(0, 2 * math.pi); x, y = cx, cy
+            for _ in range(int(rng.integers(3, 7))):
+                ang += rng.uniform(-0.6, 0.6); ln = rng.uniform(60, 190)
+                nx, ny = x + math.cos(ang) * ln, y + math.sin(ang) * ln
+                d.line((x, y, nx, ny), fill=(235, 240, 255, 210), width=int(rng.integers(2, 5))); x, y = nx, ny
+        d.ellipse((cx - 26, cy - 26, cx + 26, cy + 26), outline=(235, 240, 255, 220), width=4)
+    else:
+        scr = hgrad(sw, shh, BLUE, CYAN)
+        gl = Image.new("RGBA", (sw, shh), (0, 0, 0, 0))
+        ImageDraw.Draw(gl).polygon([(0, shh * 0.15), (sw, 0), (sw, shh * 0.32), (0, shh * 0.5)], fill=(255, 255, 255, 46))
+        scr.alpha_composite(gl)
+        lg = row([text_sprite("MEYDAN", F(BLACK, 72)), text_sprite("GSM", F(BLACK, 72), INK)], gap=4)
+        scr.alpha_composite(lg, ((sw - lg.width) // 2, (shh - lg.height) // 2))
+    scr.putalpha(_round_mask(sw, shh, 74)); body.alpha_composite(scr, (sx, sy))
+    ImageDraw.Draw(body).rounded_rectangle((sx + sw // 2 - 70, sy + 18, sx + sw // 2 + 70, sy + 50), 16, fill=(14, 16, 26))
+    return body
+
+
+def slide_once_sonra(im, t, dur, d, shop, C):
+    """Kirik ekran -> yeni gibi. d = {ust?, once, sonra}"""
+    e = env(t, dur)
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 80, 250, e, anchor="lm")
+    if d.get("ust"):
+        u = C.get_or(("ou", d["ust"]), lambda: para_sprite(d["ust"], F(XB, 70), WHITE, 940, gap=4, align="c"))
+        put(im, u, 540, 370, e * eout(prog(t, 0, 0.4)))
+    a = C.get_or("pa", lambda: _phone_front(560, 1020, True)); b = C.get_or("pb", lambda: _phone_front(560, 1020, False))
+    mid = dur * 0.45; w = eout(prog(t, mid, 0.8))
+    ph = a.copy()
+    if w > 0:
+        cut = int(ph.height * w); ph.alpha_composite(b.crop((0, 0, b.width, cut)), (0, 0))
+        if w < 1:
+            glow = Image.new("RGBA", (ph.width, 14), (255, 255, 255, 220)); ph.alpha_composite(glow.filter(ImageFilter.GaussianBlur(4)), (0, max(0, cut - 7)))
+    shake = math.sin(t * 50) * 8 * (1 - prog(t, 0.2, 0.6)) if t < mid else 0
+    pin = eout(prog(t, 0.1, 0.5))
+    put(im, ph, 540 + shake, 1110 + (1 - pin) * 300, e * pin)
+    lab = C.get_or(("ol", t >= mid + 0.4), lambda: pill("SONRA" if t >= mid + 0.4 else "ÖNCE", F(BLACK, 44), WHITE,
+                                                     GREEN if t >= mid + 0.4 else PINK, padx=36, pady=14))
+    put(im, lab, 540, 490, e * pin)
+    txt = d["sonra"] if t >= mid + 0.4 else d["once"]
+    s = C.get_or(("ot", txt), lambda: para_sprite(txt, F(XB, 60), WHITE, 940, align="c"))
+    put(im, s, 540, 1700, e * pin)
+
+
 SLIDES = {"intro": slide_intro, "hook": slide_hook, "tariffs": slide_tariffs, "plans": slide_plans,
-          "bullets": slide_bullets, "cta": slide_cta}
+          "bullets": slide_bullets, "cta": slide_cta, "sohbet": slide_sohbet, "kinetik": slide_kinetik,
+          "sayilar": slide_sayilar, "efsane": slide_efsane, "once_sonra": slide_once_sonra}
 
 
-def render_reel(slides, shop, out_path, music_path=None, seed=0, workdir=None):
+def render_reel(slides, shop, out_path, music_path=None, seed=0, workdir=None, theme=None):
     """slides: [{'tip': 'hook', 'sure': 3.0, 'veri': {...}}, ...]"""
+    set_theme(theme)
     W, H = 1080, 1920
     bg = Background(W, H, seed)
     workdir = workdir or os.path.dirname(out_path) or "."
@@ -441,8 +693,9 @@ def render_reel(slides, shop, out_path, music_path=None, seed=0, workdir=None):
 
 
 # =============== POST (4:5, 1080x1350) ===============
-def render_post(d, shop, out_path, seed=0):
-    """d = {tip: 'tariffs'|'plans'|'bullets'|'tanitim', ...}"""
+def render_post(d, shop, out_path, seed=0, theme=None):
+    """d = {tip: 'tariffs'|'plans'|'bullets'|'tanitim'|'sohbet'|'sayilar'|'efsane', ...}"""
+    set_theme(theme)
     W, H = 1080, 1350
     canvas = Background(W, H, seed).frame(2.0)
     put(canvas, brand_small(shop, 42), 70, 90, anchor="lm")
@@ -486,6 +739,22 @@ def render_post(d, shop, out_path, seed=0):
             ImageDraw.Draw(g).line((17, 31, 26, 40, 43, 21), fill=WHITE, width=7)
             c.alpha_composite(g, (pad + 34, pad + (h - 60) // 2)); c.alpha_composite(txt, (pad + 124, pad + (h - txt.height) // 2))
             put(im, c, 70 - pad, y - pad, anchor="lt"); y += h + 26
+    elif kind == "sohbet":
+        m = v["mesajlar"]; pw, ph_ = 620, 900
+        _, (sx, sy, sw, shh) = phone_body(pw, ph_)
+        phn = phone_with_screen(pw, ph_, chat_screen(sw, shh, m, len(m), False, scale=0.86))
+        put(im, phn, 540, y + phn.height / 2 - 50); y += phn.height - 80
+    elif kind == "sayilar":
+        for i, m in enumerate(v["maddeler"][:4]):
+            txt = para_sprite(m, F(BOLD, 48), INK, 690, gap=6); h = max(170, txt.height + 70)
+            c, pad = card(940, h, 34)
+            nb = Image.new("RGBA", (120, 120), (0, 0, 0, 0)); g = hgrad(120, 120, BLUE, CYAN); g.putalpha(_round_mask(120, 120, 60)); nb.alpha_composite(g)
+            ns = text_sprite(str(i + 1), F(BLACK, 76), WHITE, pad=0); nb.alpha_composite(ns, ((120 - ns.width) // 2, (120 - ns.height) // 2 - 4))
+            c.alpha_composite(nb, (pad + 30, pad + (h - 120) // 2)); c.alpha_composite(txt, (pad + 180, pad + (h - txt.height) // 2))
+            put(im, c, 70 - pad, y - pad, anchor="lt"); y += h + 24
+    elif kind == "efsane":
+        for lab, txt, gr in (("EFSANE", v["efsane"], (PINK, (150, 20, 90))), ("GERÇEK", v["gercek"], (GREEN, (0, 110, 120)))):
+            c = _myth_card(lab, txt, gr, 940, fs=44); put(im, c, 540, y + c.height / 2 - 40); y += c.height - 70
     elif kind == "tanitim":
         c = info_card(shop, 940); put(im, c, 540, y + c.height / 2 - 40); y += c.height - 40
     if v.get("not"):

@@ -33,11 +33,11 @@ def build(plan, shop, outdir):
         wav = base + ".wav"
         music.make_music(wav, dur, seed=plan["seed"], cuts=cuts)
         path = base + ".mp4"
-        render.render_reel(plan["slides"], shop, path, music_path=wav, seed=plan["seed"], workdir=outdir)
+        render.render_reel(plan["slides"], shop, path, music_path=wav, seed=plan["seed"], workdir=outdir, theme=plan.get("tema"))
         os.remove(wav)
     else:
         path = base + ".jpg"
-        render.render_post(plan["post"], shop, path, seed=plan["seed"])
+        render.render_post(plan["post"], shop, path, seed=plan["seed"], theme=plan.get("tema"))
     with open(base + "_caption.txt", "w", encoding="utf-8") as f:
         f.write(plan["caption"])
     return path
