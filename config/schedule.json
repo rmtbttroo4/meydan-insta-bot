@@ -1,5 +1,5 @@
 {
-  "_aciklama": "Her gun iki paylasim: ogle (12:00, gorsel gonderi) ve aksam (19:00, Reels). Kampanya konusu (tarife/turbobox) suresi dolmussa 'yedekler' listesindeki konu kullanilir. Konular: tarife, turbobox, hat, servis, ikinciel, sifir, aksesuar, ipucu, tanitim",
+  "_aciklama": "Her gun iki paylasim: ogle (12:00, gorsel gonderi) ve aksam (19:00, Reels). 'kampanya' = campaigns.json icindeki 'diger' listesinden siradaki kampanya (yoksa yedek konu). Kampanya disi videolarin sonunda aktif kampanya hatirlatmasi cikar.",
   "slotlar": {
     "ogle": {
       "saat": "12:00",
@@ -17,7 +17,7 @@
     },
     "sali": {
       "ogle": "hat",
-      "aksam": "sifir"
+      "aksam": "kampanya"
     },
     "carsamba": {
       "ogle": "aksesuar",
@@ -28,8 +28,8 @@
       "aksam": "servis"
     },
     "cuma": {
-      "ogle": "ipucu",
-      "aksam": "aksesuar"
+      "ogle": "kampanya",
+      "aksam": "tarife"
     },
     "cumartesi": {
       "ogle": "turbobox",
@@ -37,12 +37,13 @@
     },
     "pazar": {
       "ogle": "servis",
-      "aksam": "tanitim"
+      "aksam": "turbobox"
     }
   },
   "yedekler": {
     "tarife": "hat",
-    "turbobox": "sifir"
+    "turbobox": "sifir",
+    "kampanya": "sifir"
   },
   "tek_seferlik": {
     "_aciklama": "Bir defaya mahsus plan: 'YYYY-AA-GG_slot': {maskot_konu, sira}",

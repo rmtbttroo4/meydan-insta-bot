@@ -770,6 +770,70 @@ def slide_secim(im, t, dur, d, shop, C):
 
 
 
+# =============== KAMPANYA SLAYTLARI ===============
+def _tl(v):
+    try:
+        return f"{int(v):,}".replace(",", ".")
+    except Exception:
+        return str(v)
+
+
+def slide_fiyat(im, t, dur, d, shop, C):
+    """Tek paket/urun icin buyuk fiyat: eski fiyat cizilir, yeni fiyat sayarak iner.
+    d = {ust, paket, yeni, eski?, birim, alt?, rozet?, not?}"""
+    e = env(t, dur)
+    put(im, C.get_or("brand", lambda: brand_small(shop)), 80, 170, e, anchor="lm")
+    u = C.get_or(("fu", d.get("ust", "")), lambda: para_sprite(d.get("ust", ""), F(XB, 70), WHITE, 960, gap=6, align="c"))
+    put(im, u, 540, 360, e * eout(prog(t, 0, 0.4)))
+    pk = C.get_or(("fp", d["paket"]), lambda: pill(d["paket"], fit_font(d["paket"], BLACK, 96, 820), WHITE, padx=60, pady=26, grad=(BLUE, (0, 150, 230))))
+    p = prog(t, 0.25, 0.5); put(im, pk, 540, 590, e * eout(p), scale=0.6 + 0.4 * eback(p) if p < 1 else 1)
+    yeni = d["yeni"]; eski = d.get("eski")
+    if eski:
+        o = C.get_or(("fo", eski), lambda: text_sprite(f"{_tl(eski)} TL", F(BOLD, 90), (200, 210, 240)))
+        pe = eout(prog(t, 0.6, 0.4)); put(im, o, 540, 790, e * pe)
+        sp = eout(prog(t, 1.0, 0.35))
+        if sp > 0:
+            ln = Image.new("RGBA", (int((o.width + 30) * sp) + 1, 14), (0, 0, 0, 0))
+            ImageDraw.Draw(ln).rounded_rectangle((0, 0, ln.width - 1, 13), 7, fill=(255, 60, 90, 255))
+            put(im, ln.rotate(8, expand=True), 540 - (o.width + 30) / 2, 790, e, anchor="lm")
+    cp = eout(prog(t, 1.25 if eski else 0.6, 0.9))
+    try:
+        y_ = float(str(yeni).replace(".", "")); e_ = float(str(eski).replace(".", "")) if eski else y_ * 1.6
+        v = int(round(e_ + (y_ - e_) * cp))
+    except Exception:
+        v = yeni
+    if cp > 0:
+        n = text_sprite(_tl(v), F(BLACK, 300), CYAN, pad=0)
+        un = text_sprite(d.get("birim", "TL"), F(XB, 70), WHITE, pad=0)
+        r_ = row([n, un], gap=16, valign="b")
+        put(im, r_, 540, 1060, e * clamp(cp * 3), scale=1 + 0.08 * math.sin(math.pi * prog(t, 2.2, 0.35)))
+    if d.get("rozet"):
+        rz = C.get_or("fr", lambda: pill(d["rozet"], F(BLACK, 54), WHITE, grad=(PINK, (190, 0, 120)), padx=46, pady=22).rotate(-3, expand=True, resample=Image.BICUBIC))
+        p = prog(t, 1.9, 0.45)
+        put(im, rz, 540, 1290, e * clamp(p * 2), scale=(0.3 + 0.7 * eback(p)) if p < 1 else 1 + 0.03 * math.sin(t * 7))
+    if d.get("alt"):
+        a = C.get_or(("fa", d["alt"]), lambda: para_sprite(d["alt"], F(BOLD, 54), WHITE, 960, gap=8, align="c"))
+        put(im, a, 540, 1450, e * eout(prog(t, 1.8, 0.5)))
+    if d.get("not"):
+        n2 = C.get_or(("fn", d["not"]), lambda: para_sprite(d["not"], F(MED, 32), SOFT, 940, gap=6, align="c"))
+        put(im, n2, 540, 1720, e * eout(prog(t, 2.0, 0.5)))
+
+
+def slide_kampanya_bandi(im, t, dur, d, shop, C):
+    """Kapanistan once kisa kampanya hatirlatmasi. d = {etiket, satir, alt?, not?}"""
+    e = env(t, dur)
+    et = C.get_or(("ke", d.get("etiket")), lambda: pill(d.get("etiket", "BU AY MEYDAN'DA"), F(BLACK, 50), INK, (255, 214, 60), padx=40, pady=18))
+    p = prog(t, 0.05, 0.4); put(im, et, 540, 640, e * eout(p), scale=0.6 + 0.4 * eback(p) if p < 1 else 1)
+    s = C.get_or(("ks", d["satir"]), lambda: para_sprite(d["satir"], F(BLACK, 96), WHITE, 960, gap=10, align="c"))
+    put(im, s, 540 + (1 - eout(prog(t, 0.25, 0.5))) * 600, 960, e)
+    if d.get("alt"):
+        a = C.get_or(("ka2", d["alt"]), lambda: pill(d["alt"], F(BLACK, 54), WHITE, grad=(PINK, (190, 0, 120)), padx=44, pady=22))
+        p = prog(t, 0.7, 0.45); put(im, a, 540, 1290, e * eout(p), scale=(0.6 + 0.4 * eback(p)) if p < 1 else 1 + 0.03 * math.sin(t * 7))
+    if d.get("not"):
+        n = C.get_or(("kn", d["not"]), lambda: para_sprite(d["not"], F(MED, 32), SOFT, 940, align="c"))
+        put(im, n, 540, 1520, e * eout(prog(t, 0.9, 0.5)))
+
+
 def slide_maskot(im, t, dur, d, shop, C):
     from . import maskot
     return maskot.slide(im, t, dur, d, shop, C)
@@ -779,7 +843,7 @@ SLIDES = {"intro": slide_intro, "hook": slide_hook, "tariffs": slide_tariffs, "p
           "bullets": slide_bullets, "cta": slide_cta, "sohbet": slide_sohbet, "kinetik": slide_kinetik,
           "sayilar": slide_sayilar, "efsane": slide_efsane, "once_sonra": slide_once_sonra,
           "bildirim": slide_bildirim, "bant": slide_bant, "batarya": slide_batarya, "secim": slide_secim,
-          "maskot": slide_maskot}
+          "maskot": slide_maskot, "fiyat": slide_fiyat, "kampanya_bandi": slide_kampanya_bandi}
 
 
 def render_reel(slides, shop, out_path, music_path=None, seed=0, workdir=None, theme=None):
@@ -904,6 +968,19 @@ def render_post(d, shop, out_path, seed=0, theme=None):
     elif kind == "efsane":
         for lab, txt, gr in (("EFSANE", v["efsane"], (PINK, (150, 20, 90))), ("GERÇEK", v["gercek"], (GREEN, (0, 110, 120)))):
             c = _myth_card(lab, txt, gr, 940, fs=44); put(im, c, 540, y + c.height / 2 - 40); y += c.height - 70
+    elif kind == "kampanya":
+        if v.get("paket") and v.get("paket", "").lower() != v.get("baslik", "").lower():
+            pk = pill(v["paket"], fit_font(v["paket"], BLACK, 70, 800), WHITE, padx=44, pady=20, grad=(BLUE, (0, 150, 230))); put(im, pk, 70, y, anchor="lt"); y += pk.height + 30
+        if v.get("eski"):
+            o = text_sprite(f"{_tl(v['eski'])} {v.get('birim', 'TL')}", F(BOLD, 70), (200, 210, 240), pad=0); put(im, o, 70, y, anchor="lt")
+            ImageDraw.Draw(im).line((64, y + o.height // 2 + 14, 70 + o.width + 6, y + o.height // 2 - 14), fill=(255, 60, 90), width=10); y += o.height + 20
+        if v.get("yeni"):
+            r_ = row([text_sprite(_tl(v["yeni"]), F(BLACK, 230), CYAN, pad=0), text_sprite(v.get("birim", "TL"), F(XB, 64), WHITE, pad=0)], gap=14)
+            put(im, r_, 70, y, anchor="lt"); y += r_.height + 30
+        if v.get("rozet"):
+            rz = pill(v["rozet"], F(BLACK, 48), WHITE, grad=(PINK, (190, 0, 120)), padx=40, pady=18); put(im, rz, 70, y, anchor="lt"); y += rz.height + 30
+        if v.get("alt"):
+            a = para_sprite(v["alt"], F(BOLD, 46), WHITE, 940); put(im, a, 70, y, anchor="lt"); y += a.height + 20
     elif kind == "maskot":
         from . import maskot
         bl = maskot.balon(v["balon"], 900); put(im, bl, 540, y, anchor="mt"); y += bl.height - 10

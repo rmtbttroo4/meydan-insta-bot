@@ -377,6 +377,77 @@ MASKOT_POST = {
              "caption": f"{MASKOT} numarasını değiştirmeden geçti, sen de geç! 📶 Kimliğinle gel, işlemleri birlikte yapalım."}],
 }
 
+
+# ---------------- KAMPANYA YARDIMCILARI ----------------
+AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+
+
+def _sayi(v):
+    try: return int(str(v).replace(".", ""))
+    except Exception: return None
+
+
+def _tl(v):
+    n = _sayi(v)
+    return f"{n:,}".replace(",", ".") if n is not None else str(v)
+
+
+def sure_yazisi(k, bugun):
+    """Bitis tarihi SADECE 'bitis_teyitli': true ise videoya yazilir (uydurma tarih yok)."""
+    if not k.get("bitis_teyitli"): return None
+    try: b = dt.date.fromisoformat(k["gecerlilik_bitis"])
+    except Exception: return None
+    kalan = (b - bugun).days
+    if kalan < 0: return None
+    if kalan == 0: return "SON GÜN!"
+    if kalan <= 7: return f"Son {kalan + 1} gün!"
+    return f"{b.day} {AYLAR[b.month - 1]}'a kadar!"
+
+
+def diger_kampanyalar(kampanyalar, bugun):
+    return [k for k in kampanyalar.get("diger", []) if kampanya_gecerli(k, bugun)]
+
+
+def hatirlatma(kampanyalar, bugun, no):
+    """Kampanya disi videolarin sonuna eklenecek kisa kampanya hatirlatmasi (aktif kampanyalar arasinda doner)."""
+    adaylar = []
+    k = kampanyalar.get("tarife")
+    if kampanya_gecerli(k, bugun):
+        en = min(k["paketler"], key=lambda p: p["yeni"])
+        adaylar.append({"satir": f"Faturalı hat {_tl(en['yeni'])} TL/ay'dan başlayan fiyatlarla", "alt": sure_yazisi(k, bugun) or k.get("alt_baslik"), "not": k.get("not")})
+    k = kampanyalar.get("turbobox")
+    if kampanya_gecerli(k, bugun):
+        en = min(k["paketler"], key=lambda p: _sayi(p["fiyat"]) or 10 ** 9)
+        adaylar.append({"satir": f"TurboBox 5G {en['fiyat']} {k['birim']}'den başlayan paketlerle", "alt": sure_yazisi(k, bugun) or "Evde, yazlıkta, iş yerinde", "not": k.get("not")})
+    for k in diger_kampanyalar(kampanyalar, bugun):
+        satir = k["baslik"] + (f" {_tl(k['fiyat'])} {k.get('birim', 'TL')}" if k.get("fiyat") else "")
+        adaylar.append({"satir": satir, "alt": sure_yazisi(k, bugun) or k.get("aciklama"), "not": k.get("not")})
+    if not adaylar: return None
+    a = dict(adaylar[no % len(adaylar)]); a["etiket"] = "BU AY MEYDAN'DA"
+    return {"tip": "kampanya_bandi", "sure": 2.8, "veri": {x: y for x, y in a.items() if y}}
+
+
+def tarife_fiyat_slaytlari(k, bugun, no):
+    paketler = sorted(k["paketler"], key=lambda p: p["yeni"])
+    secim = [paketler[0], next((p for p in paketler if p.get("vurgu")), paketler[-1])]
+    if no % 2: secim = secim[::-1]
+    out = []
+    for p in secim:
+        av = p["eski"] - p["yeni"] if p.get("eski") else None
+        out.append({"tip": "fiyat", "sure": 3.8, "veri": {
+            "ust": "Faturalı hatta indirim", "paket": p["ad"], "eski": p.get("eski"), "yeni": p["yeni"], "birim": "TL/ay",
+            "rozet": f"Aylık {av} TL avantaj" if av and av > 0 else None,
+            "alt": (p.get("ek") or k["dakika_sms"]) + " · " + k["alt_baslik"], "not": k["not"]}})
+    return out
+
+
+def turbobox_fiyat_slaytlari(k, bugun, no):
+    paketler = k["paketler"]
+    secim = [min(paketler, key=lambda p: _sayi(p["fiyat"]) or 10 ** 9), next((p for p in paketler if p.get("vurgu")), paketler[-1])]
+    if no % 2: secim = secim[::-1]
+    return [{"tip": "fiyat", "sure": 3.6, "veri": {"ust": "TurboBox 5G ile internet", "paket": p["ad"], "yeni": p["fiyat"], "birim": k["birim"],
+             "alt": k["alt_baslik"], "not": k["not"]}} for p in secim]
+
 def _sira_no(bugun, takvim, konu, slot):
     """Bu konunun bu slotta kacinci kez geldigi: haftada iki kez gelen konu (or. ipucu) her seferinde farkli icerik alir."""
     gunler = [g for g in GUNLER if takvim["gunler"][g][slot] == konu] or [gun_adi(bugun)]
@@ -418,6 +489,8 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
 
     if konu in ("tarife", "turbobox") and not kampanya_gecerli(kampanyalar.get(konu), bugun):
         konu = takvim.get("yedekler", {}).get(konu, "tanitim")
+    if konu == "kampanya" and not diger_kampanyalar(kampanyalar, bugun):
+        konu = takvim.get("yedekler", {}).get("kampanya", "sifir")
     no = _sira_no(bugun, takvim, konu, slot)
     cta = dict(CTA_VARYANT[(no + len(konu)) % len(CTA_VARYANT)])
 
@@ -433,7 +506,10 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
             [MK(S(2.4, "saskin", "titre", "Faturam ne kadar gelmiş?!", f"{MASKOT}'nin faturası", ["ter"]),
                 S(2.4, "heyecan", "zipla", "İndirimli tarifeler varmış!", f"{MASKOT}'nin faturası", ["yildiz"]))],
         ][no % 4]
-        slides = acilis + [{"tip": "tariffs", "sure": 7.5, "veri": k}, {"tip": "cta", "sure": 4.5, "veri": {"ust": "Hattını Meydan'da aç", "buton": cta["buton"], "maskot": True}}]
+        sy = sure_yazisi(k, bugun)
+        if sy: acilis = acilis + [{"tip": "kampanya_bandi", "sure": 2.4, "veri": {"etiket": "KAMPANYA", "satir": "Faturalı hatta indirim", "alt": sy}}]
+        govde = tarife_fiyat_slaytlari(k, bugun, no) if no % 2 == 0 else [{"tip": "tariffs", "sure": 7.5, "veri": k}] + tarife_fiyat_slaytlari(k, bugun, no)[:1]
+        slides = acilis + govde + [{"tip": "cta", "sure": 4.5, "veri": {"ust": "Hattını Meydan'da aç", "buton": cta["buton"], "maskot": True}}]
         post = {"tip": "tariffs", "veri": k}
         if fmt == "post":
             caption = caption.replace("📶 Faturalı hatta indirim zamanı!", "📶 Faturalı tarifelerde güncel fiyatlar burada!", 1)
@@ -450,10 +526,28 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
             [MK(S(2.4, "uzgun", "dur", "Yazlıkta internet yok…", f"{MASKOT} tatilde"),
                 S(2.4, "heyecan", "sevin", "TurboBox ile çözüldü!", f"{MASKOT} tatilde", ["sinyal", "yildiz"]))],
         ][no % 4]
-        slides = acilis + [{"tip": "plans", "sure": 6.5, "veri": pv}, {"tip": "cta", "sure": 4.5, "veri": {"ust": "İnternetin Meydan'da", "buton": cta["buton"], "maskot": True}}]
+        sy = sure_yazisi(k, bugun)
+        if sy: acilis = acilis + [{"tip": "kampanya_bandi", "sure": 2.4, "veri": {"etiket": "KAMPANYA", "satir": "TurboBox 5G", "alt": sy}}]
+        govde = turbobox_fiyat_slaytlari(k, bugun, no) if no % 2 == 0 else [{"tip": "plans", "sure": 6.5, "veri": pv}] + turbobox_fiyat_slaytlari(k, bugun, no)[:1]
+        slides = acilis + govde + [{"tip": "cta", "sure": 4.5, "veri": {"ust": "İnternetin Meydan'da", "buton": cta["buton"], "maskot": True}}]
         post = {"tip": "plans", "veri": pv}
         if fmt == "post":
             caption = caption.replace("🏠 Evde, yazlıkta, iş yerinde internet:", "📡 Kablo derdi olmadan internet:", 1)
+    elif konu == "kampanya":
+        ks = diger_kampanyalar(kampanyalar, bugun); k = ks[no % len(ks)]
+        sy = sure_yazisi(k, bugun)
+        veri = {"ust": k.get("ust", "Kampanya"), "paket": k.get("urun", k["baslik"]), "yeni": k.get("fiyat") or "", "eski": k.get("eski_fiyat"),
+                "birim": k.get("birim", "TL"), "rozet": sy or k.get("rozet"), "alt": k.get("aciklama"), "not": k.get("not")}
+        if not k.get("fiyat"):
+            slides = [{"tip": "kampanya_bandi", "sure": 3.4, "veri": {"etiket": "KAMPANYA", "satir": k["baslik"], "alt": sy or k.get("aciklama"), "not": k.get("not")}}]
+        else:
+            slides = [{"tip": "hook", "sure": 2.4, "veri": {"ust": k.get("ust", "Bu ay"), "vurgu": "KAMPANYA", "alt": "MEYDAN GSM'de"}},
+                      {"tip": "fiyat", "sure": 4.2, "veri": veri}]
+        slides += [{"tip": "cta", "sure": 4.5, "veri": {**cta, "maskot": True}}]
+        post = {"tip": "kampanya", "veri": {**veri, "baslik": k["baslik"]}}
+        caption = (f"🔥 {k['baslik']}" + (f": {_tl(k['fiyat'])} {k.get('birim', 'TL')}" if k.get("fiyat") else "") + "\n"
+                   + (f"{k['aciklama']}\n" if k.get("aciklama") else "") + (f"⏰ {sy}\n" if sy else "")
+                   + (f"*{k['not']}\n" if k.get("not") else "") + f"\n{iletisim(shop)}\n\n" + hashtags(shop, ["#kampanya", "#fırsat"]))
     else:
         eski = KONULAR.get(konu, [])
         sen = SENARYOLAR.get(konu, {})
@@ -464,8 +558,10 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
             mk = MASKOT_SENARYO.get(konu, [])
             if mk and no % 2 == 0: s_ = mk[(no // 2) % len(mk)]
             else: s_ = havuz[(no // 2 if mk else no) % len(havuz)]
-            slides = [dict(x) for x in s_["slides"]] + [{"tip": "cta", "sure": 4.5, "veri": {**cta, "maskot": True}}]
+            hb = hatirlatma(kampanyalar, bugun, no)
+            slides = [dict(x) for x in s_["slides"]] + ([hb] if hb else []) + [{"tip": "cta", "sure": 4.5, "veri": {**cta, "maskot": True}}]
             post = None; ana = s_["caption"]
+            if hb: ana += f"\n\n🔥 Bu ay MEYDAN'da: {hb['veri']['satir']}" + (f" ({hb['veri']['alt']})" if hb['veri'].get('alt') else "")
         else:
             havuz = list(sen.get("post", [])) + [
                 {"tip": "tanitim" if konu == "tanitim" else "bullets", "veri": {k2: v[k2] for k2 in ("ust", "baslik", "maddeler")}, "caption": v["caption"]}
