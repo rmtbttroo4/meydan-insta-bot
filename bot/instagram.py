@@ -119,6 +119,26 @@ def publish(media_url, caption, kind, test=False):
     return j["id"]
 
 
+def already_posted(caption, hours=20):
+    """Ayni aciklamanin ilk satiriyla son X saatte paylasilmis bir gonderi var mi? (cift paylasimi onler)"""
+    import datetime as _dt
+    api, uid = _resolve()
+    code, j = _get(api, f"{uid}/media", fields="caption,timestamp,permalink", limit=10)
+    if code != 200:
+        print("[cift kontrol] son gonderiler okunamadi, kontrol atlandi:", (j.get("error") or {}).get("message", "")[:120])
+        return None
+    first = caption.strip().split("\n")[0].strip()
+    now = _dt.datetime.now(_dt.timezone.utc)
+    for m in j.get("data") or []:
+        try:
+            ts = _dt.datetime.strptime(m.get("timestamp", ""), "%Y-%m-%dT%H:%M:%S%z")
+        except Exception:
+            continue
+        if (now - ts).total_seconds() < hours * 3600 and (m.get("caption") or "").strip().split("\n")[0].strip() == first:
+            return m.get("permalink") or m.get("id")
+    return None
+
+
 def permalink(media_id):
     try:
         api, _ = _resolve()

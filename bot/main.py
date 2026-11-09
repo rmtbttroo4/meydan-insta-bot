@@ -75,6 +75,11 @@ def run_one(g, slot, a, shop, kamp, takvim):
 
     from . import storage, instagram, notify
     try:
+        if not a.test:
+            onceki = instagram.already_posted(plan["caption"])
+            if onceki:
+                print("  Bu gonderi zaten paylasilmis, atlaniyor:", onceki)
+                return
         ctype = "video/mp4" if path.endswith(".mp4") else "image/jpeg"
         url = storage.upload(path, f"instagram/{os.path.basename(path)}", ctype)
         if a.test:
