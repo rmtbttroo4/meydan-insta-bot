@@ -65,6 +65,33 @@ def main():
             run_one(g, slot, a, shop, kamp, takvim)
 
 
+def tiktok_caption(caption, extra_tags):
+    """Instagram aciklamasini TikTok icin sadeler: Instagram hashtag'lerini atar, TikTok etiketlerini ekler."""
+    satirlar = [l for l in caption.strip().split("\n") if not l.strip().startswith("#")]
+    metin = "\n".join(satirlar).strip()
+    return f"{metin}\n\n{' '.join(extra_tags)}"
+
+
+def send_tiktok_mail(plan, path, notify):
+    try:
+        cfg = load("tiktok.json")
+    except Exception:
+        return
+    if not cfg.get("aktif"):
+        return
+    tur = "Video (Reels)" if path.endswith(".mp4") else "Görsel (fotoğraf gönderisi)"
+    adimlar = ("1) Bu maili telefonda aç, ekteki dosyayı indir.\n"
+               "2) TikTok → + → Yükle → dosyayı seç.\n"
+               + ("3) 'Ses ekle' ile trend bir müzik seç; orijinal sesin seviyesini düşürebilirsin.\n" if path.endswith(".mp4")
+                  else "3) Fotoğraf modunda paylaş; istersen bir müzik ekle.\n")
+               + "4) Aşağıdaki açıklamayı kopyala-yapıştır → Paylaş.")
+    body = (f"{tur} TikTok'a hazır.\n\n{adimlar}\n\n"
+            f"────────── KOPYALANACAK AÇIKLAMA ──────────\n\n"
+            f"{tiktok_caption(plan['caption'], cfg.get('hashtagler', []))}\n")
+    notify.send(f"🎵 TikTok'a hazır: {plan['konu']} ({'video' if path.endswith('.mp4') else 'görsel'}) – {plan['tarih']}",
+                body, attachment=path)
+
+
 def run_one(g, slot, a, shop, kamp, takvim):
     plan = content.plan_for(g, shop, kamp, takvim, slot, a.konu, a.format)
     print(f"[{plan['tarih']} {slot}] konu={plan['konu']} format={plan['format']}")
@@ -80,6 +107,7 @@ def run_one(g, slot, a, shop, kamp, takvim):
             if onceki:
                 print("  Bu gonderi zaten paylasilmis, atlaniyor:", onceki)
                 return
+            send_tiktok_mail(plan, path, notify)  # Instagram'dan bagimsiz: once TikTok maili
         ctype = "video/mp4" if path.endswith(".mp4") else "image/jpeg"
         url = storage.upload(path, f"instagram/{os.path.basename(path)}", ctype)
         if a.test:
@@ -93,8 +121,7 @@ def run_one(g, slot, a, shop, kamp, takvim):
         media_id = instagram.publish(url, plan["caption"], plan["format"])
         link = instagram.permalink(media_id) or "(link alinamadi)"
         notify.send(f"✅ MEYDAN GSM Instagram: {plan['konu']} paylaşıldı",
-                    f"Tarih: {plan['tarih']} ({plan['slot']})\nKonu: {plan['konu']} ({plan['format']})\nLink: {link}\n\nAçıklama:\n{plan['caption']}",
-                    attachment=path if path.endswith(".jpg") else None)
+                    f"Tarih: {plan['tarih']} ({plan['slot']})\nKonu: {plan['konu']} ({plan['format']})\nLink: {link}\n\nAçıklama:\n{plan['caption']}")
         print("  paylasildi:", link)
     except Exception as e:
         notify.send("❌ MEYDAN GSM Instagram " + ("TESTİ" if a.test else "paylaşımı") + " BAŞARISIZ",
