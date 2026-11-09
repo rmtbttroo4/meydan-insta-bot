@@ -25,5 +25,9 @@ def send(subject, body, attachment=None):
         main = "image" if sub == "jpeg" else "video"
         with open(attachment, "rb") as f:
             m.add_attachment(f.read(), maintype=main, subtype=sub, filename=os.path.basename(attachment))
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
-        s.login(user, pw); s.send_message(m)
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+            s.login(user, pw); s.send_message(m)
+        print("[notify] e-posta gonderildi:", to)
+    except Exception as e:  # e-posta hatasi paylasimi bozmasin, logda gorunsun
+        print("[notify] E-POSTA GONDERILEMEDI:", e)

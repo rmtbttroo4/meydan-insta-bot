@@ -16,10 +16,11 @@ on:
       konu:
         description: "Konuyu zorla (bos birak = takvime gore)"
         required: false
-      dry_run:
-        description: "Sadece uret, paylasma"
-        type: boolean
-        default: false
+      mod:
+        description: "test = uret+yukle+Instagram'da hazirla ama YAYINLAMA, uret = sadece dosya uret, paylas = gercekten paylas"
+        type: choice
+        options: [test, uret, paylas]
+        default: test
 
 concurrency: instagram-post
 
@@ -51,14 +52,15 @@ jobs:
           EVENT_SCHEDULE: ${{ github.event.schedule }}
           IN_SLOT: ${{ github.event.inputs.slot }}
           IN_KONU: ${{ github.event.inputs.konu }}
-          IN_DRY: ${{ github.event.inputs.dry_run }}
+          IN_MOD: ${{ github.event.inputs.mod }}
         run: |
           if [ "$EVENT_SCHEDULE" = "52 8 * * *" ]; then SLOT=ogle;
           elif [ "$EVENT_SCHEDULE" = "52 15 * * *" ]; then SLOT=aksam;
           else SLOT="${IN_SLOT:-ogle}"; fi
           ARGS="--slot $SLOT"
           if [ -n "$IN_KONU" ]; then ARGS="$ARGS --konu $IN_KONU"; fi
-          if [ "$IN_DRY" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "$IN_MOD" = "test" ]; then ARGS="$ARGS --test"; fi
+          if [ "$IN_MOD" = "uret" ]; then ARGS="$ARGS --dry-run"; fi
           echo "Calisiyor: $ARGS"
           python -m bot.main $ARGS
       - name: Uretilen dosyalari sakla

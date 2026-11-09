@@ -73,9 +73,10 @@ Depo → Settings → Secrets and variables → Actions → **New repository sec
 | `REPORT_TO` | Raporun gideceği adres (boşsa GMAIL_USER) |
 
 ### 7. Test
-1. **Actions → Gunluk Instagram paylasimi → Run workflow** → slot seç (`ogle`/`aksam`), "Sadece uret, paylasma" kutusunu işaretle.
+1. **Actions → Gunluk Instagram paylasimi → Run workflow** → slot seç (`ogle`/`aksam`), mod: **test**.
+   Görsel/video üretilir, Cloudflare'e yüklenir, Instagram'da hazırlanır ama **yayınlanmaz**; Gmail'e 🧪 test maili gelir.
    Üretilen dosyalar işin sonunda **Artifacts** olarak indirilebilir; paylaşım yapılmaz.
-2. Her şey iyiyse kutuyu işaretlemeden çalıştır → Instagram'da gönderi çıkar, Gmail'e rapor gelir.
+2. Gerekirse mod: **paylas** ile elle gerçek paylaşım yapılabilir → Instagram'da gönderi çıkar, Gmail'e rapor gelir.
 3. Sonrasında bot her gün kendisi çalışır.
 
 ## Yerelde deneme

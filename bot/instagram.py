@@ -41,8 +41,9 @@ def _wait(container_id, timeout=600):
     raise RuntimeError("Medya isleme zaman asimi")
 
 
-def publish(media_url, caption, kind):
-    """kind: 'reel' (mp4) veya 'post' (jpeg). Yayinlanan medya id'sini dondurur."""
+def publish(media_url, caption, kind, test=False):
+    """kind: 'reel' (mp4) veya 'post' (jpeg). Yayinlanan medya id'sini dondurur.
+    test=True: Instagram medyayi indirip isler ama YAYINLAMAZ (konteyner 24 saatte kendiliginden silinir)."""
     params = {"caption": caption, "access_token": _tok()}
     if kind == "reel":
         params.update({"media_type": "REELS", "video_url": media_url, "share_to_feed": "true"})
@@ -50,6 +51,8 @@ def publish(media_url, caption, kind):
         params.update({"image_url": media_url})
     c = _check(requests.post(f"{API}/{_uid()}/media", data=params, timeout=60))["id"]
     _wait(c)
+    if test:
+        return None
     j = _check(requests.post(f"{API}/{_uid()}/media_publish", data={"creation_id": c, "access_token": _tok()}, timeout=60))
     return j["id"]
 

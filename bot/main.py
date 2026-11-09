@@ -4,6 +4,7 @@ Kullanim:
   python -m bot.main                      # su anki slotun (ogle/aksam) icerigini uret ve paylas
   python -m bot.main --slot ogle          # ogle gonderisini uret ve paylas
   python -m bot.main --dry-run            # sadece uret (out/ klasorune), paylasma
+  python -m bot.main --test               # uret + Cloudflare'e yukle + Instagram'da hazirla, YAYINLAMA
   python -m bot.main --dry-run --hafta    # onumuzdeki 7 gunun hepsini uret (onizleme)
   python -m bot.main --konu tarife --format post   # konu/format zorla
 """
@@ -45,6 +46,7 @@ def build(plan, shop, outdir):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--test", action="store_true", help="her seyi dene ama Instagram'da yayinlama")
     ap.add_argument("--hafta", action="store_true")
     ap.add_argument("--tarih")
     ap.add_argument("--slot", choices=["ogle", "aksam"])
@@ -75,6 +77,14 @@ def run_one(g, slot, a, shop, kamp, takvim):
     try:
         ctype = "video/mp4" if path.endswith(".mp4") else "image/jpeg"
         url = storage.upload(path, f"instagram/{os.path.basename(path)}", ctype)
+        if a.test:
+            instagram.publish(url, plan["caption"], plan["format"], test=True)
+            notify.send(f"🧪 MEYDAN GSM Instagram TEST başarılı: {plan['konu']} ({plan['slot']})",
+                        f"Üretim, Cloudflare yükleme ve Instagram hazırlık adımları sorunsuz çalıştı. Gönderi YAYINLANMADI.\n\n"
+                        f"Tarih: {plan['tarih']} ({plan['slot']})\nKonu: {plan['konu']} ({plan['format']})\nDosya: {url}\n\nAçıklama:\n{plan['caption']}",
+                        attachment=path if path.endswith(".jpg") else None)
+            print("  TEST basarili (yayinlanmadi):", url)
+            return
         media_id = instagram.publish(url, plan["caption"], plan["format"])
         link = instagram.permalink(media_id) or "(link alinamadi)"
         notify.send(f"✅ MEYDAN GSM Instagram: {plan['konu']} paylaşıldı",
@@ -82,7 +92,7 @@ def run_one(g, slot, a, shop, kamp, takvim):
                     attachment=path if path.endswith(".jpg") else None)
         print("  paylasildi:", link)
     except Exception as e:
-        notify.send("❌ MEYDAN GSM Instagram paylaşımı BAŞARISIZ",
+        notify.send("❌ MEYDAN GSM Instagram " + ("TESTİ" if a.test else "paylaşımı") + " BAŞARISIZ",
                     f"Tarih: {plan['tarih']} ({plan['slot']})\nKonu: {plan['konu']}\nHata: {e}\n\n{traceback.format_exc()}")
         raise
 
