@@ -5,7 +5,11 @@ name: Gunluk Instagram paylasimi
 on:
   schedule:
     - cron: "52 8 * * *"    # 11:52 TR -> ogle (gorsel gonderi)
+    - cron: "17 9 * * *"    # 12:17 TR -> ogle yedek (zaten paylasildiysa atlar)
+    - cron: "47 9 * * *"    # 12:47 TR -> ogle yedek
     - cron: "52 15 * * *"   # 18:52 TR -> aksam (Reels)
+    - cron: "17 16 * * *"   # 19:17 TR -> aksam yedek (zaten paylasildiysa atlar)
+    - cron: "47 16 * * *"   # 19:47 TR -> aksam yedek
   workflow_dispatch:
     inputs:
       slot:
@@ -56,8 +60,14 @@ jobs:
           IN_KONU: ${{ github.event.inputs.konu }}
           IN_MOD: ${{ github.event.inputs.mod }}
         run: |
-          if [ "$EVENT_SCHEDULE" = "52 8 * * *" ]; then SLOT=ogle;
-          elif [ "$EVENT_SCHEDULE" = "52 15 * * *" ]; then SLOT=aksam;
+          # Zamanlanmis calismada slot, cron'un saat alanindan bulunur (8-9 UTC = ogle, 15-16 UTC = aksam).
+          if [ -n "$EVENT_SCHEDULE" ]; then
+            H=$(echo "$EVENT_SCHEDULE" | awk '{print $2}')
+            case "$H" in 8|9) SLOT=ogle ;; 15|16) SLOT=aksam ;; *) echo "Bilinmeyen cron: $EVENT_SCHEDULE"; exit 1 ;; esac
+            # GitHub bazen saatlerce gec baslatir: paylasim saatinden 2 saatten fazla gecmisse paylasma.
+            NOW=$(date -u +%H | sed 's/^0//')
+            if [ "$SLOT" = ogle ] && { [ "$NOW" -lt 8 ] || [ "$NOW" -gt 10 ]; }; then echo "Cok gec basladi (UTC $NOW), ogle paylasimi atlandi."; exit 0; fi
+            if [ "$SLOT" = aksam ] && { [ "$NOW" -lt 15 ] || [ "$NOW" -gt 17 ]; }; then echo "Cok gec basladi (UTC $NOW), aksam paylasimi atlandi."; exit 0; fi
           else SLOT="${IN_SLOT:-ogle}"; fi
           ARGS="--slot $SLOT"
           if [ -n "$IN_KONU" ]; then ARGS="$ARGS --konu $IN_KONU"; fi
