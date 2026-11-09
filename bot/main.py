@@ -94,6 +94,9 @@ def send_tiktok_mail(plan, path, notify):
 
 def run_one(g, slot, a, shop, kamp, takvim):
     plan = content.plan_for(g, shop, kamp, takvim, slot, a.konu, a.format)
+    if plan.get("atla"):
+        print(f"[{plan['tarih']} {slot}] {plan['atla']}")
+        return
     print(f"[{plan['tarih']} {slot}] konu={plan['konu']} format={plan['format']}")
     path = build(plan, shop, a.out)
     print("  ->", path)

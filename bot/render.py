@@ -414,6 +414,12 @@ def slide_cta(im, t, dur, d, shop, C):
     put(im, tt, 540, 600, eout(prog(t, 0.4, 0.4)) * e)
     c = C.get_or("c_info", lambda: info_card(shop))
     p = prog(t, 0.55, 0.6); put(im, c, 540, 1010 + (1 - eout(p)) * 200, eout(p) * e)
+    if d.get("maskot"):
+        from . import maskot
+        a_ = 112; b_ = -30 + 28 * math.sin(t * 11)
+        sp = maskot.ciz("gulen" if int(t * 1.2) % 3 else "goz_kirp", t=t, kol_sol=a_, kol_sag=b_, goz_kapali=1.0 if (t % 2.8) < 0.12 else 0)
+        p_ = eout(prog(t, 0.8, 0.6))
+        put(im, sp, 870, 1900 + (1 - p_) * 500 + math.sin(t * 3.2) * 8, e, scale=0.5, anchor="mb")
     btn = C.get_or(("c_btn", d.get("buton", "")), lambda: pill(d.get("buton", "Mağazamıza bekleriz!"), F(BLACK, 54), WHITE, padx=60, pady=30, grad=(PINK, (190, 0, 120))))
     p = prog(t, 1.1, 0.6)
     put(im, btn, 540, 1420, eout(p) * e, scale=1 + 0.035 * math.sin((t - 1.7) * 6) if p >= 1 else 0.6 + 0.4 * eback(p))
@@ -763,10 +769,17 @@ def slide_secim(im, t, dur, d, shop, C):
         put(im, n, 540, 1560, e * eout(prog(t, mid + 0.4, 0.5)))
 
 
+
+def slide_maskot(im, t, dur, d, shop, C):
+    from . import maskot
+    return maskot.slide(im, t, dur, d, shop, C)
+
+
 SLIDES = {"intro": slide_intro, "hook": slide_hook, "tariffs": slide_tariffs, "plans": slide_plans,
           "bullets": slide_bullets, "cta": slide_cta, "sohbet": slide_sohbet, "kinetik": slide_kinetik,
           "sayilar": slide_sayilar, "efsane": slide_efsane, "once_sonra": slide_once_sonra,
-          "bildirim": slide_bildirim, "bant": slide_bant, "batarya": slide_batarya, "secim": slide_secim}
+          "bildirim": slide_bildirim, "bant": slide_bant, "batarya": slide_batarya, "secim": slide_secim,
+          "maskot": slide_maskot}
 
 
 def render_reel(slides, shop, out_path, music_path=None, seed=0, workdir=None, theme=None):
@@ -891,6 +904,12 @@ def render_post(d, shop, out_path, seed=0, theme=None):
     elif kind == "efsane":
         for lab, txt, gr in (("EFSANE", v["efsane"], (PINK, (150, 20, 90))), ("GERÇEK", v["gercek"], (GREEN, (0, 110, 120)))):
             c = _myth_card(lab, txt, gr, 940, fs=44); put(im, c, 540, y + c.height / 2 - 40); y += c.height - 70
+    elif kind == "maskot":
+        from . import maskot
+        bl = maskot.balon(v["balon"], 900); put(im, bl, 540, y, anchor="mt"); y += bl.height - 10
+        ms = maskot.post_sprite(v.get("ifade", "mutlu"), v.get("efektler", ()), tuple(v.get("kol", (112, 68))), v.get("gri", False))
+        ms = ms.resize((int(ms.width * 0.56), int(ms.height * 0.56)), Image.LANCZOS)
+        put(im, ms, 540, y, anchor="mt"); y += ms.height - 20
     elif kind == "soru":
         for i, m in enumerate(v["secenekler"][:4]):
             c, pad = card(940, 150, 34)

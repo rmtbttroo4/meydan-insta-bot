@@ -302,6 +302,81 @@ for _k, _v in EK_SENARYOLAR.items():
     for _f in ("reel", "post"):
         SENARYOLAR.setdefault(_k, {}).setdefault(_f, []).extend(_v.get(_f, []))
 
+
+# ---------------- MASKOT: MEYDI ----------------
+# MEYDAN GSM'in maskotu: yuzu ekraninda olan sevimli telefon "Meydi". Aksam Reels'lerinin yarisi Meydi hikayesidir.
+MASKOT = "Meydi"
+
+
+def S(sure, ifade, hareket="dur", balon=None, ust=None, efektler=(), gri=False):
+    return {"sure": sure, "ifade": ifade, "hareket": hareket, "balon": balon, "ust": ust, "efektler": list(efektler), "gri": gri}
+
+
+def MK(*sahneler):
+    return {"tip": "maskot", "sure": round(sum(x["sure"] for x in sahneler), 2), "veri": {"sahneler": list(sahneler)}}
+
+
+MASKOT_SENARYO = {
+    "servis": [
+        {"slides": [MK(S(2.6, "agla", "titre", "Ekranım kırıldııı!", f"{MASKOT}'nin kötü günü…", ["catlak"]),
+                       S(2.6, "dusunceli", "dusun", "Nereye gitsem acaba?", f"{MASKOT}'nin kötü günü…", ["catlak"]),
+                       S(3.4, "gulen", "sevin", "Yeni gibi oldum!", "MEYDAN GSM'e uğradı", ["yara_bandi", "yildiz"]))],
+         "caption": f"{MASKOT}'nin ekranı kırıldı ama moralini bozmadı 😄 Telefonunun başına bir şey geldiyse getir, birlikte bakalım. Teknik servis için MEYDAN GSM 🔧"},
+        {"slides": [MK(S(2.8, "uykulu", "dur", "Şarjım hiç tutmuyor…", f"{MASKOT}'nin derdi", ["pil_dusuk"]),
+                       S(2.4, "saskin", "titre", "Yine mi %1?!", f"{MASKOT}'nin derdi", ["pil_dusuk", "ter"]),
+                       S(3.4, "heyecan", "zipla", "Meydan'da çözüldü!", "Teknik servis MEYDAN GSM'de", ["pil_dolu", "yildiz"]))],
+         "caption": f"Şarjı tutmayan telefon {MASKOT}'yi bile yordu 🔋 Şarj sorunlarında arızayı birlikte tespit edelim. Teknik servis için MEYDAN GSM'e uğra."},
+    ],
+    "ikinciel": [
+        {"slides": [MK(S(2.8, "uykulu", "dur", "Ben artık yaşlandım…", "Eski telefonun da böyle mi?", gri=True),
+                       S(2.4, "dusunceli", "dusun", "Takas mı yapsak?", "Eski telefonun da böyle mi?", gri=True),
+                       S(3.4, "heyecan", "zipla", "Takasla yenilendim!", "İkinci el ve takas MEYDAN GSM'de", ["yildiz"]))],
+         "caption": f"Eski telefonun {MASKOT} gibi yorulduysa takas zamanı! 🔄 Eskisini getir, değerini birlikte belirleyelim, yenisiyle çık."},
+    ],
+    "sifir": [
+        {"slides": [MK(S(3.0, "heyecan", "zipla", "Merhaba! Kutudan yeni çıktım!", "Yeni telefon heyecanı", ["kutu", "yildiz"]),
+                       S(3.0, "goz_kirp", "el_salla", "Seni de bekliyorum!", "Sıfır telefonlar MEYDAN GSM'de", ["yildiz"]))],
+         "caption": f"Kutudan yeni çıkmış gibi heyecan! 📦 Sıfır telefon seçenekleri için MEYDAN GSM'e uğra ya da stok ve fiyat için WhatsApp'tan yaz."},
+    ],
+    "aksesuar": [
+        {"slides": [MK(S(2.8, "saskin", "titre", "Kılıfsız dışarı mı çıkayım?!", f"{MASKOT} korkuyor", ["ter"]),
+                       S(3.4, "mutlu", "goster", "Kılıf + ekran koruyucu = rahat ben", "Aksesuarlar MEYDAN GSM'de", ["kilif", "koruyucu", "yildiz"]))],
+         "caption": f"{MASKOT} kılıfsız dışarı çıkmıyor, sen de çıkma! 🛡️ Kılıf ve ekran koruyucu için MEYDAN GSM'e uğra."},
+        {"slides": [MK(S(2.8, "uykulu", "dur", "%1… çok yorgunum…", f"{MASKOT} bitik", ["pil_dusuk"]),
+                       S(3.2, "gulen", "sevin", "Uyumlu şarj aleti, yeni hayat!", "Şarj aksesuarları MEYDAN GSM'de", ["pil_dolu", "yildiz"]))],
+         "caption": f"Doğru şarj aleti {MASKOT}'ye yeniden hayat verdi 🔋 Şarj aleti, kablo ve araç şarjı için mağazamıza bekleriz."},
+    ],
+    "hat": [
+        {"slides": [MK(S(2.8, "dusunceli", "dusun", "Numaram değişmeden geçebilir miyim?", f"{MASKOT}'nin sorusu"),
+                       S(3.4, "heyecan", "zipla", "Evet! Numaram aynı, hattım Türk Telekom!", "Numara taşıma MEYDAN GSM'de", ["sinyal", "yildiz"]))],
+         "caption": f"{MASKOT} numarasını değiştirmeden Türk Telekom'a geçti 📶 Kimliğinle gel, numara taşıma işlemini birlikte yapalım."},
+    ],
+    "tanitim": [
+        {"slides": [MK(S(2.6, "mutlu", "gir", f"Merhaba! Ben {MASKOT}", "Tanışalım!"),
+                       S(2.6, "goz_kirp", "el_salla", "MEYDAN GSM'in maskotuyum", "Tanışalım!", ["yildiz"]),
+                       S(3.0, "gulen", "sevin", "Altınoluk'ta seni bekliyoruz!", "Telefonla ilgili her şey", ["kalp"]))],
+         "caption": f"Tanışalım! Ben {MASKOT}, MEYDAN GSM'in maskotu 👋 Sıfır ve ikinci el telefon, takas, teknik servis, hat işlemleri ve aksesuar için Altınoluk'ta seni bekliyoruz!"},
+    ],
+    "ipucu": [
+        {"slides": [MK(S(2.8, "saskin", "titre", "Beni sıcakta bırakma!", f"{MASKOT}'den ipucu", ["ter"]),
+                       S(3.2, "mutlu", "goster", "Serin yer = uzun ömürlü batarya", f"{MASKOT}'den ipucu", ["pil_dolu"]))],
+         "caption": f"{MASKOT}'den ipucu: telefonunu güneşte, sıcak arabada bırakma, batarya ömrü uzasın ☀️🔋"},
+    ],
+}
+
+MASKOT_POST = {
+    "servis": [{"tip": "maskot", "veri": {"ust": "Teknik servis", "baslik": "Kırık ekran dert değil", "balon": "Yeni gibi oldum!", "ifade": "gulen", "efektler": ["yara_bandi", "yildiz"], "kol": [215, -35]},
+                "caption": f"{MASKOT} tamir oldu, mutlu! 😄 Telefonunun başına bir şey geldiyse getir, birlikte bakalım 🔧"}],
+    "ikinciel": [{"tip": "maskot", "veri": {"ust": "Takas fırsatı", "baslik": "Eski telefonun yoruldu mu?", "balon": "Takas zamanı!", "ifade": "uykulu", "gri": True},
+                  "caption": f"Eski telefonun da {MASKOT} gibi yorulduysa takas zamanı! 🔄 Detaylar için WhatsApp'tan yaz."}],
+    "aksesuar": [{"tip": "maskot", "veri": {"ust": "Aksesuar köşemiz", "baslik": "Korunan telefon mutlu telefon", "balon": "Kılıfım var, korkum yok!", "ifade": "mutlu", "efektler": ["kilif", "koruyucu"], "kol": [112, 0]},
+                  "caption": f"{MASKOT} kılıfıyla mutlu 🛡️ Kılıf ve ekran koruyucu için MEYDAN GSM'e uğra."}],
+    "ipucu": [{"tip": "maskot", "veri": {"ust": f"{MASKOT}'den ipucu", "baslik": "Telefonunu sıcakta bırakma", "balon": "Serin yer, uzun ömür!", "ifade": "saskin", "efektler": ["ter"]},
+               "caption": f"{MASKOT}'den ipucu: telefonunu güneşte, sıcak arabada bırakma ☀️ Batarya ömrü uzasın 🔋"}],
+    "hat": [{"tip": "maskot", "veri": {"ust": "Numara taşıma", "baslik": "Numaran aynı kalsın", "balon": "Hattım artık Türk Telekom!", "ifade": "heyecan", "efektler": ["sinyal"], "kol": [210, -30]},
+             "caption": f"{MASKOT} numarasını değiştirmeden geçti, sen de geç! 📶 Kimliğinle gel, işlemleri birlikte yapalım."}],
+}
+
 def _sira_no(bugun, takvim, konu, slot):
     """Bu konunun bu slotta kacinci kez geldigi: haftada iki kez gelen konu (or. ipucu) her seferinde farkli icerik alir."""
     gunler = [g for g in GUNLER if takvim["gunler"][g][slot] == konu] or [gun_adi(bugun)]
@@ -324,11 +399,22 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
     hafta = bugun.toordinal() // 7
 
     og = None if zorla_konu else ozel_gun(bugun)
-    if og and og.get("anma"): tema = "gece"
+    if og and og.get("anma"):
+        tema = "gece"
+        if slot == "aksam":  # anma gunu aksam satis paylasimi yapilmaz
+            return {"tarih": bugun.isoformat(), "slot": slot, "atla": "Anma günü: akşam paylaşımı yapılmadı."}
     if og and fmt == "post" and slot == "ogle":
         caption = f"{og['caption']}\n\n{shop['name_main']} {shop['name_accent']} · {shop['district']}"
         return {"tarih": bugun.isoformat(), "slot": slot, "konu": "ozelgun", "format": "post", "slides": None,
                 "post": {"tip": "ozel_gun", "veri": og}, "caption": caption, "seed": sira, "tema": tema}
+
+    tek = takvim.get("tek_seferlik", {}).get(f"{bugun.isoformat()}_{slot}") if not zorla_konu else None
+    if tek and fmt == "reel" and tek.get("maskot_konu") in MASKOT_SENARYO:
+        s_ = MASKOT_SENARYO[tek["maskot_konu"]][tek.get("sira", 0)]
+        slides = [dict(x) for x in s_["slides"]] + [{"tip": "cta", "sure": 4.5, "veri": {**CTA_VARYANT[0], "maskot": True}}]
+        caption = f"{s_['caption']}\n\n{iletisim(shop)}\n\n" + hashtags(shop, _etiket(tek["maskot_konu"]))
+        return {"tarih": bugun.isoformat(), "slot": slot, "konu": tek["maskot_konu"], "format": fmt, "slides": slides, "post": None,
+                "caption": caption, "seed": sira, "tema": tema}
 
     if konu in ("tarife", "turbobox") and not kampanya_gecerli(kampanyalar.get(konu), bugun):
         konu = takvim.get("yedekler", {}).get(konu, "tanitim")
@@ -344,8 +430,10 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
             [{"tip": "intro", "sure": 2.6}, {"tip": "hook", "sure": 2.8, "veri": {"ust": "Faturalı hatta", "vurgu": "İNDİRİM", "alt": "zamanı!", "rozet": k.get("rozet")}}],
             [{"tip": "kinetik", "sure": 3.0, "veri": {"kelimeler": ["Faturan", "kabarık mı?", "İndirim zamanı!"], "vurgu": [2]}}],
             [{"tip": "sohbet", "sure": 4.4, "veri": {"ust": "En çok sorulan soru", "mesajlar": [M("musteri", "Faturalı hatlarda kampanya var mı?"), M("biz", "Evet! Güncel tarifeler hemen aşağıda")]}}],
-        ][no % 3]
-        slides = acilis + [{"tip": "tariffs", "sure": 7.5, "veri": k}, {"tip": "cta", "sure": 4.5, "veri": {"ust": "Hattını Meydan'da aç", "buton": cta["buton"]}}]
+            [MK(S(2.4, "saskin", "titre", "Faturam ne kadar gelmiş?!", f"{MASKOT}'nin faturası", ["ter"]),
+                S(2.4, "heyecan", "zipla", "İndirimli tarifeler varmış!", f"{MASKOT}'nin faturası", ["yildiz"]))],
+        ][no % 4]
+        slides = acilis + [{"tip": "tariffs", "sure": 7.5, "veri": k}, {"tip": "cta", "sure": 4.5, "veri": {"ust": "Hattını Meydan'da aç", "buton": cta["buton"], "maskot": True}}]
         post = {"tip": "tariffs", "veri": k}
         if fmt == "post":
             caption = caption.replace("📶 Faturalı hatta indirim zamanı!", "📶 Faturalı tarifelerde güncel fiyatlar burada!", 1)
@@ -359,8 +447,10 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
             [{"tip": "intro", "sure": 2.6}],
             [{"tip": "kinetik", "sure": 3.0, "veri": {"kelimeler": ["Evde", "Yazlıkta", "İş yerinde", "İnternet!"], "vurgu": [3]}}],
             [{"tip": "sohbet", "sure": 4.4, "veri": {"ust": "Yazlığa internet mi lazım?", "mesajlar": [M("musteri", "Yazlığa internet bağlatmak istiyorum"), M("biz", "TurboBox ile kolay! Paketler hemen aşağıda")]}}],
-        ][no % 3]
-        slides = acilis + [{"tip": "plans", "sure": 6.5, "veri": pv}, {"tip": "cta", "sure": 4.5, "veri": {"ust": "İnternetin Meydan'da", "buton": cta["buton"]}}]
+            [MK(S(2.4, "uzgun", "dur", "Yazlıkta internet yok…", f"{MASKOT} tatilde"),
+                S(2.4, "heyecan", "sevin", "TurboBox ile çözüldü!", f"{MASKOT} tatilde", ["sinyal", "yildiz"]))],
+        ][no % 4]
+        slides = acilis + [{"tip": "plans", "sure": 6.5, "veri": pv}, {"tip": "cta", "sure": 4.5, "veri": {"ust": "İnternetin Meydan'da", "buton": cta["buton"], "maskot": True}}]
         post = {"tip": "plans", "veri": pv}
         if fmt == "post":
             caption = caption.replace("🏠 Evde, yazlıkta, iş yerinde internet:", "📡 Kablo derdi olmadan internet:", 1)
@@ -371,14 +461,18 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
             havuz = list(sen.get("reel", [])) or [
                 {"slides": [{"tip": "intro", "sure": 2.6}, {"tip": "bullets", "sure": 5.6, "veri": {k2: v[k2] for k2 in ("ust", "baslik", "maddeler")}}],
                  "caption": v["caption"]} for v in eski]
-            s_ = havuz[no % len(havuz)]
-            slides = [dict(x) for x in s_["slides"]] + [{"tip": "cta", "sure": 4.5, "veri": cta}]
+            mk = MASKOT_SENARYO.get(konu, [])
+            if mk and no % 2 == 0: s_ = mk[(no // 2) % len(mk)]
+            else: s_ = havuz[(no // 2 if mk else no) % len(havuz)]
+            slides = [dict(x) for x in s_["slides"]] + [{"tip": "cta", "sure": 4.5, "veri": {**cta, "maskot": True}}]
             post = None; ana = s_["caption"]
         else:
             havuz = list(sen.get("post", [])) + [
                 {"tip": "tanitim" if konu == "tanitim" else "bullets", "veri": {k2: v[k2] for k2 in ("ust", "baslik", "maddeler")}, "caption": v["caption"]}
                 for v in eski]
-            p_ = havuz[no % len(havuz)]
+            mp = MASKOT_POST.get(konu, [])
+            if mp and no % 3 == 0: p_ = mp[(no // 3) % len(mp)]
+            else: p_ = havuz[no % len(havuz)]
             post = {"tip": p_["tip"], "veri": p_["veri"]}; slides = None; ana = p_["caption"]
         caption = f"{ana}\n\n{iletisim(shop)}\n\n" + hashtags(shop, _etiket(konu))
 

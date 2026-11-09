@@ -43,5 +43,12 @@
   "yedekler": {
     "tarife": "hat",
     "turbobox": "sifir"
+  },
+  "tek_seferlik": {
+    "_aciklama": "Bir defaya mahsus plan: 'YYYY-AA-GG_slot': {maskot_konu, sira}",
+    "2026-11-11_aksam": {
+      "maskot_konu": "tanitim",
+      "sira": 0
+    }
   }
 }
