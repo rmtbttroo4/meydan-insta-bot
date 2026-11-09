@@ -1,0 +1,49 @@
+name: Seslendirme uret
+
+# Bir seslendirme metin dosyasindaki (assets/seslendirme/*.json) satirlari Turkce yapay sesle okur, WAV olarak indirilebilir yapar.
+on:
+  workflow_dispatch:
+    inputs:
+      dosya:
+        description: "Metin dosyasi"
+        default: "assets/seslendirme/turbobox.json"
+
+jobs:
+  ses:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Piper kurulum
+        run: pip install piper-tts
+      - name: Seslendir
+        env:
+          DOSYA: ${{ github.event.inputs.dosya }}
+        run: |
+          python - <<'PY'
+          import json, os, wave, urllib.request
+          cfg = json.load(open(os.environ["DOSYA"], encoding="utf-8"))
+          ses = cfg.get("ses", "tr_TR-fahrettin-medium"); lang, rest = ses.split("-", 1); name, q = rest.rsplit("-", 1)
+          base = f"https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/{lang}/{name}/{q}/{ses}"
+          for ext in (".onnx", ".onnx.json"):
+              urllib.request.urlretrieve(base + ext, ses + ext)
+          from piper import PiperVoice
+          v = PiperVoice.load(ses + ".onnx")
+          os.makedirs("ses_out", exist_ok=True)
+          for key, txt in cfg["satirlar"].items():
+              path = f"ses_out/{key}.wav"
+              with wave.open(path, "wb") as w:
+                  try:
+                      from piper import SynthesisConfig
+                      v.synthesize_wav(txt, w, syn_config=SynthesisConfig(length_scale=cfg.get("hiz", 1.0)))
+                  except ImportError:
+                      v.synthesize(txt, w, length_scale=cfg.get("hiz", 1.0))
+              print(key, os.path.getsize(path))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seslendirme
+          path: ses_out/
