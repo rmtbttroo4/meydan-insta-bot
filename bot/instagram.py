@@ -13,15 +13,56 @@ def _env(name, default=None):
     return v if v or default is None else default
 
 
-# EAA... ile baslayan sistem kullanicisi token'i graph.facebook.com uzerinden calisir.
-# IGAA... ile baslayan Instagram token'i kullanilirsa IG_API_BASE=https://graph.instagram.com/v23.0 yap.
-API = _env("IG_API_BASE", "") or "https://graph.facebook.com/v23.0"
+FB = "https://graph.facebook.com/v23.0"
+IG = "https://graph.instagram.com/v23.0"
+_resolved = {}
 
 
 def _tok(): return _env("IG_ACCESS_TOKEN")
 
 
-def _uid(): return _env("IG_USER_ID")
+def _get(base, path, **params):
+    params["access_token"] = _tok()
+    try:
+        r = requests.get(f"{base}/{path}", params=params, timeout=30)
+        return r.status_code, (r.json() if r.headers.get("content-type", "").startswith(("application/json", "text/javascript")) else {"raw": r.text[:200]})
+    except Exception as e:
+        return 0, {"error": str(e)}
+
+
+def _resolve():
+    """Token turune gore dogru API adresini ve Instagram hesap kimligini bulur (bir kez)."""
+    if _resolved: return _resolved["api"], _resolved["uid"]
+    forced = _env("IG_API_BASE", "")
+    uid = _env("IG_USER_ID", "")
+    tried = []
+    candidates = [forced] if forced else [FB, IG]
+    for base in candidates:
+        # 1) Verilen kimlikle hesap okunabiliyor mu?
+        if uid:
+            code, j = _get(base, uid, fields="id,username")
+            tried.append(f"{base.split('//')[1].split('/')[0]} /{{IG_USER_ID}} -> {code} {j.get('username') or (j.get('error') or {}).get('message', '')[:90]}")
+            if code == 200 and j.get("id"):
+                _resolved.update(api=base, uid=j["id"]); break
+        # 2) Token'in kendi hesabi (Instagram token'i ise user_id doner)
+        code, j = _get(base, "me", fields="user_id,username,id,name")
+        tried.append(f"{base.split('//')[1].split('/')[0]} /me -> {code} {j.get('username') or j.get('name') or (j.get('error') or {}).get('message', '')[:90]}")
+        if code == 200 and base == IG and (j.get("user_id") or j.get("id")):
+            _resolved.update(api=base, uid=str(j.get("user_id") or j["id"])); break
+        if code == 200 and base == FB:
+            # 3) Sistem kullanicisi / sayfa uzerinden bagli Instagram hesabi
+            c2, j2 = _get(base, "me/accounts", fields="instagram_business_account{id,username}")
+            for pg in (j2.get("data") or []):
+                ig = pg.get("instagram_business_account")
+                if ig:
+                    tried.append(f"graph.facebook.com /me/accounts -> IG {ig.get('username')}")
+                    _resolved.update(api=base, uid=ig["id"]); break
+            if _resolved: break
+    print("[instagram kontrol]\n  " + "\n  ".join(tried))
+    if not _resolved:
+        raise RuntimeError("Instagram hesabina erisilemedi. Denenenler:\n  " + "\n  ".join(tried))
+    print(f"[instagram kontrol] kullanilan: {_resolved['api']} hesap={_resolved['uid'][-4:]}")
+    return _resolved["api"], _resolved["uid"]
 
 
 def _check(r):
@@ -33,7 +74,8 @@ def _check(r):
 def _wait(container_id, timeout=600):
     t0 = time.time()
     while time.time() - t0 < timeout:
-        j = _check(requests.get(f"{API}/{container_id}", params={"fields": "status_code,status", "access_token": _tok()}, timeout=30))
+        api, _ = _resolve()
+        j = _check(requests.get(f"{api}/{container_id}", params={"fields": "status_code,status", "access_token": _tok()}, timeout=30))
         st = j.get("status_code")
         if st == "FINISHED": return
         if st in ("ERROR", "EXPIRED"): raise RuntimeError(f"Medya islenemedi: {j}")
@@ -49,17 +91,19 @@ def publish(media_url, caption, kind, test=False):
         params.update({"media_type": "REELS", "video_url": media_url, "share_to_feed": "true"})
     else:
         params.update({"image_url": media_url})
-    c = _check(requests.post(f"{API}/{_uid()}/media", data=params, timeout=60))["id"]
+    api, uid = _resolve()
+    c = _check(requests.post(f"{api}/{uid}/media", data=params, timeout=60))["id"]
     _wait(c)
     if test:
         return None
-    j = _check(requests.post(f"{API}/{_uid()}/media_publish", data={"creation_id": c, "access_token": _tok()}, timeout=60))
+    j = _check(requests.post(f"{api}/{uid}/media_publish", data={"creation_id": c, "access_token": _tok()}, timeout=60))
     return j["id"]
 
 
 def permalink(media_id):
     try:
-        return _check(requests.get(f"{API}/{media_id}", params={"fields": "permalink", "access_token": _tok()}, timeout=30)).get("permalink")
+        api, _ = _resolve()
+        return _check(requests.get(f"{api}/{media_id}", params={"fields": "permalink", "access_token": _tok()}, timeout=30)).get("permalink")
     except Exception:
         return None
 
