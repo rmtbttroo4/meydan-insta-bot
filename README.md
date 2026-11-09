@@ -90,3 +90,8 @@ python -m bot.main --dry-run --konu tarife --format post
 - Müzik kodla üretilir, telifsizdir.
 - Yazı tipi: Inter (SIL Open Font License, `bot/fonts/LICENSE-Inter.txt`).
 - Paylaşım hata verirse Gmail'e "BAŞARISIZ" e-postası gelir; o gün paylaşım yapılmamıştır.
+
+## Tam saatinde paylaşım (Cloudflare zamanlayıcısı)
+GitHub'ın kendi zamanlayıcısı bazen saatlerce gecikebiliyor. Bu yüzden `cloudflare-zamanlayici/worker.js`
+her gün 11:58 ve 18:56'da (TR) işi başlatır. GitHub zamanlayıcısı yedek olarak durur; aynı gönderi
+son 20 saatte paylaşılmışsa bot ikinci çalışmayı otomatik atlar (çift paylaşım olmaz).
