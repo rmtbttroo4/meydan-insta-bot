@@ -1,8 +1,10 @@
-"""Instagram API with Instagram Login (Facebook sayfasi gerektirmez) ile paylasim."""
+"""Instagram API (Unified login, sistem kullanicisi token'i - suresi dolmaz) ile paylasim."""
 import os, time
 import requests
 
-API = os.environ.get("IG_API_BASE", "https://graph.instagram.com/v23.0")
+# EAA... ile baslayan sistem kullanicisi token'i graph.facebook.com uzerinden calisir.
+# IGAA... ile baslayan Instagram token'i kullanilirsa IG_API_BASE=https://graph.instagram.com/v23.0 yap.
+API = os.environ.get("IG_API_BASE") or "https://graph.facebook.com/v23.0"
 
 
 def _tok(): return os.environ["IG_ACCESS_TOKEN"]
@@ -47,9 +49,3 @@ def permalink(media_id):
     except Exception:
         return None
 
-
-def refresh_token(token):
-    """Uzun omurlu token'i 60 gun daha uzatir."""
-    r = requests.get("https://graph.instagram.com/refresh_access_token",
-                     params={"grant_type": "ig_refresh_token", "access_token": token}, timeout=30)
-    return _check(r)["access_token"]

@@ -38,12 +38,13 @@ Instagram medyayı herkese açık bir linkten indirir; bunun için R2 kullanıl�
 3. **R2 → Manage API tokens → Create API token** → izin: *Object Read & Write*, sadece bu bucket.
    Çıkan **Access Key ID**, **Secret Access Key** ve hesap kimliğini (**Account ID**) not al.
 
-### 3. Meta (Instagram API)
+### 3. Meta (Instagram API) — TAMAMLANDI
+Uygulama: **MeydanGSM Paylasim** (işletme portfolyosu: Meydan GSM). Token türü: sistem kullanıcısı (EAA…), **süresi dolmaz**.
+Aşağıdaki eski adımlar sadece bilgi içindir.
 1. Instagram hesabının **İşletme** hesabı olduğundan emin ol.
 2. https://developers.facebook.com → **Uygulama oluştur** → kullanım durumu: **Instagram API ile mesajları ve içerikleri yönet**.
 3. **API setup with Instagram login** bölümünde **Add account** ile @meydangsm_ hesabını bağla.
 4. Aynı ekrandan **Generate token** → bu uzun ömürlü (60 gün) token `IG_ACCESS_TOKEN` olur.
-   Bot bunu her ayın 1'inde ve 15'inde kendisi yeniler.
 5. Hesap kimliği için tarayıcıda aç (TOKEN yerine token'ı yaz):
    `https://graph.instagram.com/me?fields=user_id,username&access_token=TOKEN`
    Çıkan `user_id` → `IG_USER_ID`.
@@ -52,9 +53,6 @@ Instagram medyayı herkese açık bir linkten indirir; bunun için R2 kullanıl�
 ### 4. Gmail raporu
 1. Google hesabında **2 adımlı doğrulama** açık olmalı.
 2. https://myaccount.google.com/apppasswords → yeni uygulama şifresi oluştur → `GMAIL_APP_PASSWORD`.
-
-### 5. Token yenileme izni
-GitHub → Settings → Developer settings → **Fine-grained token** → sadece bu depo, izin: **Secrets: Read and write** → `GH_PAT`.
 
 ### 6. GitHub Secrets
 Depo → Settings → Secrets and variables → Actions → **New repository secret**:
@@ -71,7 +69,6 @@ Depo → Settings → Secrets and variables → Actions → **New repository sec
 | `GMAIL_USER` | Gmail adresin |
 | `GMAIL_APP_PASSWORD` | Gmail uygulama şifresi |
 | `REPORT_TO` | Raporun gideceği adres (boşsa GMAIL_USER) |
-| `GH_PAT` | GitHub fine-grained token |
 
 ### 7. Test
 1. **Actions → Gunluk Instagram paylasimi → Run workflow** → `dry_run: true`.
