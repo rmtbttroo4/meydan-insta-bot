@@ -62,4 +62,4 @@ jobs:
           AD=$(basename "${{ github.event.inputs.dosya }}" .json)
           git fetch origin seslendirme-cikti || true
           git checkout --orphan tmp_ses && git rm -rq --cached . && mkdir -p cikti/$AD && mv ses_out/*.wav cikti/$AD/
-          git add cikti && git commit -qm "Seslendirme: $AD" && git push -f origin HEAD:seslendirme-cikti
+          git add -f cikti && git commit -qm "Seslendirme: $AD" && git push -f origin HEAD:seslendirme-cikti
