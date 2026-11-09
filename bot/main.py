@@ -120,8 +120,16 @@ def run_one(g, slot, a, shop, kamp, takvim):
             return
         media_id = instagram.publish(url, plan["caption"], plan["format"])
         link = instagram.permalink(media_id) or "(link alinamadi)"
-        notify.send(f"✅ MEYDAN GSM Instagram: {plan['konu']} paylaşıldı",
-                    f"Tarih: {plan['tarih']} ({plan['slot']})\nKonu: {plan['konu']} ({plan['format']})\nLink: {link}\n\nAçıklama:\n{plan['caption']}")
+        from . import facebook
+        fb_satir = ""
+        if facebook.enabled():
+            try:
+                fb_satir = "\nFacebook: " + facebook.publish(url, plan["caption"], plan["format"])
+            except Exception as fe:  # Facebook hatasi Instagram paylasimini bozmasin
+                fb_satir = f"\nFacebook: ❌ paylaşılamadı – {fe}"
+                print("  FACEBOOK HATASI:", fe)
+        notify.send(f"✅ MEYDAN GSM: {plan['konu']} paylaşıldı",
+                    f"Tarih: {plan['tarih']} ({plan['slot']})\nKonu: {plan['konu']} ({plan['format']})\nInstagram: {link}{fb_satir}\n\nAçıklama:\n{plan['caption']}")
         print("  paylasildi:", link)
     except Exception as e:
         notify.send("❌ MEYDAN GSM Instagram " + ("TESTİ" if a.test else "paylaşımı") + " BAŞARISIZ",
