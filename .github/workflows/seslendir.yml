@@ -8,6 +8,9 @@ on:
         description: "Metin dosyasi"
         default: "assets/seslendirme/turbobox.json"
 
+permissions:
+  contents: write
+
 jobs:
   ses:
     runs-on: ubuntu-latest
@@ -53,7 +56,10 @@ jobs:
                       v.synthesize(txt, w, length_scale=cfg.get("hiz", 1.0))
               print(key, os.path.getsize(path))
           PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: seslendirme
-          path: ses_out/
+      - name: Ciktiyi ayri dala yaz (seslendirme-cikti)
+        run: |
+          git config user.name "meydan-bot"; git config user.email "bot@users.noreply.github.com"
+          AD=$(basename "${{ github.event.inputs.dosya }}" .json)
+          git fetch origin seslendirme-cikti || true
+          git checkout --orphan tmp_ses && git rm -rq --cached . && mkdir -p cikti/$AD && mv ses_out/*.wav cikti/$AD/
+          git add cikti && git commit -qm "Seslendirme: $AD" && git push -f origin HEAD:seslendirme-cikti
