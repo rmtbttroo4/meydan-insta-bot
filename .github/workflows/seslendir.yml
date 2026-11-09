@@ -22,10 +22,38 @@ jobs:
           python-version: "3.12"
       - name: Piper kurulum
         run: pip install piper-tts
-      - name: Seslendir
+      - name: Seslendir (Gemini varsa Gemini, yoksa Piper)
         env:
           DOSYA: ${{ github.event.inputs.dosya }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          if [ -n "$GEMINI_API_KEY" ]; then python - <<'PY'
+          import json, os, wave, base64, time, urllib.request, urllib.error
+          cfg = json.load(open(os.environ["DOSYA"], encoding="utf-8"))
+          key = os.environ["GEMINI_API_KEY"].strip()
+          model = cfg.get("gemini_model", "gemini-2.5-flash-preview-tts")
+          voice = cfg.get("gemini_ses", "Puck")
+          stil = cfg.get("stil", "Neşeli, samimi ve enerjik bir Türk reklam spikeri gibi, doğal Türkçe telaffuzla söyle:")
+          os.makedirs("ses_out", exist_ok=True)
+          for k, txt in cfg["satirlar"].items():
+              body = {"contents": [{"parts": [{"text": f"{stil} {txt}"}]}],
+                      "generationConfig": {"responseModalities": ["AUDIO"],
+                                           "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice}}}}}
+              for deneme in range(4):
+                  try:
+                      req = urllib.request.Request(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                                                   data=json.dumps(body).encode(), headers={"Content-Type": "application/json", "x-goog-api-key": key})
+                      r = json.load(urllib.request.urlopen(req, timeout=120))
+                      pcm = base64.b64decode(r["candidates"][0]["content"]["parts"][0]["inlineData"]["data"]); break
+                  except urllib.error.HTTPError as ex:
+                      print("hata", k, ex.code, ex.read()[:300]); time.sleep(20 * (deneme + 1))
+              else:
+                  raise SystemExit(f"{k} seslendirilemedi")
+              with wave.open(f"ses_out/{k}.wav", "wb") as w:
+                  w.setnchannels(1); w.setsampwidth(2); w.setframerate(24000); w.writeframes(pcm)
+              print("gemini", voice, k, len(pcm)); time.sleep(7)
+          PY
+          exit 0; fi
           python - <<'PY'
           import json, os, wave, urllib.request
           cfg = json.load(open(os.environ["DOSYA"], encoding="utf-8"))
