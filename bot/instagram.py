@@ -21,10 +21,26 @@ _resolved = {}
 def _tok(): return _env("IG_ACCESS_TOKEN")
 
 
+import re as _re
+
+
+def _clean(text):
+    """Hata mesajlarinda token (veya token'a benzeyen uzun dizeler) asla loga yazilmasin."""
+    t = str(text)
+    for v in (_env("IG_ACCESS_TOKEN", ""), _env("IG_USER_ID", "")):
+        if v and len(v) > 20: t = t.replace(v, "***")
+    return _re.sub(r"(EAA|IGAA|IGQ)[A-Za-z0-9_\-]{10,}", "***", t)
+
+
 def _get(base, path, **params):
     params["access_token"] = _tok()
     try:
         r = requests.get(f"{base}/{path}", params=params, timeout=30)
+        if r.status_code >= 400:
+            try: j = r.json()
+            except Exception: j = {"raw": r.text[:200]}
+            if isinstance(j.get("error"), dict): j["error"]["message"] = _clean(j["error"].get("message", ""))
+            return r.status_code, j
         return r.status_code, (r.json() if r.headers.get("content-type", "").startswith(("application/json", "text/javascript")) else {"raw": r.text[:200]})
     except Exception as e:
         return 0, {"error": str(e)}
@@ -35,6 +51,9 @@ def _resolve():
     if _resolved: return _resolved["api"], _resolved["uid"]
     forced = _env("IG_API_BASE", "")
     uid = _env("IG_USER_ID", "")
+    if uid and not uid.isdigit():
+        raise RuntimeError("IG_USER_ID hatali: sadece rakamlardan olusmali (ornegin 17841469736600725). "
+                           "Bu kayda yanlislikla token ya da baska bir deger girilmis; GitHub Secrets'tan duzelt.")
     tried = []
     candidates = [forced] if forced else [FB, IG]
     for base in candidates:
@@ -45,7 +64,7 @@ def _resolve():
             if code == 200 and j.get("id"):
                 _resolved.update(api=base, uid=j["id"]); break
         # 2) Token'in kendi hesabi (Instagram token'i ise user_id doner)
-        code, j = _get(base, "me", fields="user_id,username,id,name")
+        code, j = _get(base, "me", fields="user_id,username" if base == IG else "id,name")
         tried.append(f"{base.split('//')[1].split('/')[0]} /me -> {code} {j.get('username') or j.get('name') or (j.get('error') or {}).get('message', '')[:90]}")
         if code == 200 and base == IG and (j.get("user_id") or j.get("id")):
             _resolved.update(api=base, uid=str(j.get("user_id") or j["id"])); break
@@ -67,7 +86,7 @@ def _resolve():
 
 def _check(r):
     if r.status_code >= 400:
-        raise RuntimeError(f"Instagram API hatasi {r.status_code}: {r.text[:500]}")
+        raise RuntimeError(f"Instagram API hatasi {r.status_code}: {_clean(r.text[:500])}")
     return r.json()
 
 
