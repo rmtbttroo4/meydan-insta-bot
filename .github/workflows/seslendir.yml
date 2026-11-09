@@ -26,10 +26,20 @@ jobs:
           python - <<'PY'
           import json, os, wave, urllib.request
           cfg = json.load(open(os.environ["DOSYA"], encoding="utf-8"))
-          ses = cfg.get("ses", "tr_TR-fahrettin-medium"); lang, rest = ses.split("-", 1); name, q = rest.rsplit("-", 1)
-          base = f"https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/{lang}/{name}/{q}/{ses}"
-          for ext in (".onnx", ".onnx.json"):
-              urllib.request.urlretrieve(base + ext, ses + ext)
+          import subprocess
+          adaylar = [cfg.get("ses", "tr_TR-fahrettin-medium"), "tr_TR-fahrettin-medium", "tr_TR-fettah-medium", "tr_TR-dfki-medium"]
+          ses = None
+          for c in adaylar:
+              lang, rest = c.split("-", 1); name, q = rest.rsplit("-", 1)
+              base = f"https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/{lang}/{name}/{q}/{c}"
+              try:
+                  for ext in (".onnx", ".onnx.json"): urllib.request.urlretrieve(base + ext, c + ext)
+                  ses = c; break
+              except Exception as ex:
+                  print("indirilemedi", c, ex)
+                  r = subprocess.run(["python", "-m", "piper.download_voices", c]); 
+                  if r.returncode == 0 and os.path.exists(c + ".onnx"): ses = c; break
+          print("kullanilan ses:", ses)
           from piper import PiperVoice
           v = PiperVoice.load(ses + ".onnx")
           os.makedirs("ses_out", exist_ok=True)
