@@ -52,7 +52,7 @@ def slide_kirik_saka(im, t, dur, d, shop, C):
         im.alpha_composite(Image.new("RGBA", (W, H), (255, 255, 255, int(230 * (1 - lt / 0.12)))))
     cr = C.get_or("cr", _crack_layer)
     sh = math.sin(lt * 70) * 22 * max(0, 1 - lt / 0.6)
-    a = 1 - R.prog(lt, 2.0, 0.5)
+    a = 0.85 if d.get("kalici") else 1 - R.prog(lt, 2.0, 0.5)
     if a > 0:
         R.put(im, cr, sh, sh * 0.5, a, anchor="lt")
     if lt > 2.2:

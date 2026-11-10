@@ -564,6 +564,66 @@ def story_plan(bugun, shop, kampanyalar, takvim):
         plan["ikinci"] = ikinci
     return plan
 
+
+# ---------------- DIKKAT CEKICI FORMATLAR: REELS + GONDERI ----------------
+# Story'deki ekrana bakani durduran formatlar Reels senaryolarina ve gorsel gonderilere de eklenir.
+def _ek2():
+    R_ = lambda tip, sure, veri: {"tip": tip, "sure": sure, "veri": veri}
+    reels = {
+        "servis": [
+            {"slides": [R_("kirik_saka", 5.2, {"once": "Telefonunu sıkı tut…", "sonra": "Korkma, senin ekranın sağlam.", "mesaj": "Ama kırılırsa adres belli"}),
+                        MK(S(3.2, "gulen", "sevin", "Meydan'da yeni gibi oldum!", "Teknik servis MEYDAN GSM'de", ["yara_bandi", "yildiz"]))],
+             "caption": "Bir an ekranın kırıldı sandın değil mi? 😅 Gerçekten kırılırsa telefonunu getir, birlikte bakalım. Teknik servis için MEYDAN GSM 🔧"},
+            {"slides": [R_("pil_uyari", 4.4, {"baslik": "Pil Zayıf", "metin": "%1 pil kaldı. Şarj aletini bağlayın.", "mesaj": "Bu uyarıyı her gün görüyorsan…"}),
+                        MK(S(3.4, "heyecan", "zipla", "Meydan'da çözüldü!", "Pil sorunlarında teknik servis", ["pil_dolu", "yildiz"]))],
+             "caption": "Bu uyarıyı gün bitmeden görüyorsan telefonuna bir bakalım 🔋 Teknik servis için MEYDAN GSM'e uğra."},
+        ],
+        "hat": [
+            {"slides": [R_("gelen_arama", 4.4, {"alt": "arıyor…", "mesaj": "Numaranı taşı, Türk Telekom'a geç!"}),
+                        R_("sayilar", 5.0, {"baslik": "Numara taşıma 3 adımda", "maddeler": ["Kimliğinle mağazaya gel", "Sana uygun tarifeyi seçelim", "İşlemleri birlikte tamamlayalım"]})],
+             "caption": "Bu aramayı aç 📞 Numaranı değiştirmeden Türk Telekom'a geç! Kimliğinle gel, işlemleri birlikte yapalım."},
+        ],
+        "aksesuar": [
+            {"slides": [R_("pov", 4.4, {"durum": "Telefon elinden kaydı, ekran yere doğru…", "ifade": "agla", "efektler": ["catlak"], "balon": "Ekran koruyucu takmıştım değil mi?"}),
+                        R_("durdur", 4.0, {"kelimeler": ["Kılıf", "Ekran koruyucu", "Şarj kablosu", "Kulaklık", "Araç şarjı", "Powerbank", "Şarj aleti", "Telefon tutucu"], "baslik": "Durdur, bugünkü ihtiyacını gör!"})],
+             "caption": "Ekran koruyucu takmayı hep sonraya mı bırakıyorsun? 😬 Kılıf ve ekran koruyucu için MEYDAN GSM'e uğra."},
+        ],
+        "ikinciel": [
+            {"slides": [R_("pov", 4.4, {"durum": "Eski telefonun yıllardır çekmecede", "ifade": "uykulu", "efektler": [], "balon": "Beni takasa ver artık!"}),
+                        R_("sohbet", 5.0, {"ust": "Takas bir mesaj uzağında", "mesajlar": [M("musteri", "Eski telefonumu takasa verebilir miyim?"), M("biz", "Tabii! Modelini ve durumunu yazın, değerlendirelim")]})],
+             "caption": "Çekmecedeki eski telefon değerlensin! 🔄 Modelini ve durumunu yaz, takas için birlikte değerlendirelim."},
+        ],
+        "tanitim": [
+            {"slides": [R_("bildirim_yagmuru", 4.8, {"bildirimler": [["Ekran kırıldı mı?", "Tamir için getir"], ["Şarj mı tutmuyor?", "Birlikte bakalım"], ["İnternet yavaş mı?", "TurboBox 5G var"], ["Eski telefon çekmecede mi?", "Takas yapıyoruz"]], "cevap": "Hepsine tek adres: MEYDAN GSM"}),
+                        R_("saat", 4.0, {"ust": "Her gün", "mesaj": "Altınoluk'ta seni bekliyoruz"})],
+             "caption": "Ekran, şarj, internet, takas… Hepsine tek adres: MEYDAN GSM! Her gün 09:00–22:30 arası Altınoluk'tayız."},
+        ],
+        "sifir": [
+            {"slides": [R_("gelen_arama", 4.4, {"alt": "arıyor…", "mesaj": "Yeni telefonun seni bekliyor!"}),
+                        MK(S(3.0, "heyecan", "zipla", "Merhaba! Kutudan yeni çıktım!", "Sıfır telefonlar MEYDAN GSM'de", ["kutu", "yildiz"]))],
+             "caption": "Bu aramayı aç, yeni telefonun seni bekliyor 📱 Stok ve fiyat için WhatsApp'tan yaz."},
+        ],
+    }
+    postlar = {
+        "servis": [{"tip": "story_kare", "veri": {"slide": R_("kirik_saka", 5.2, {"once": "", "sonra": "Ekranın böyle mi?", "mesaj": "Getir, birlikte bakalım", "kalici": True}), "t": 4.6},
+                    "caption": "Ekranın böyle mi? 😬 Getir, birlikte bakalım. Teknik servis için MEYDAN GSM 🔧"}],
+        "hat": [{"tip": "story_kare", "veri": {"slide": R_("gelen_arama", 4.4, {"alt": "arıyor…", "mesaj": "Numaranı taşı, Türk Telekom'a geç!"}), "t": 3.6},
+                 "caption": "MEYDAN GSM arıyor 📞 Numaranı değiştirmeden Türk Telekom'a geç! Kimliğinle gel, işlemleri birlikte yapalım."}],
+        "ipucu": [{"tip": "story_kare", "veri": {"slide": R_("quiz", 4.6, {"soru": "Bataryanın en büyük düşmanı hangisi?", "siklar": ["Gece şarj etmek", "Sıcak", "Kılıf"], "dogru": 1, "alt": "Cevabını yorumlara yaz!"}), "t": 3.6},
+                   "caption": "Sence hangisi? 👇 Cevabını yorumlara yaz! İpucu: yazın arabada bırakılan telefonlar çok zorlanır ☀️"},
+                  {"tip": "story_kare", "veri": {"slide": R_("pil_uyari", 4.4, {"baslik": "Pil Zayıf", "metin": "%1 pil kaldı. Şarj aletini bağlayın.", "mesaj": "Bu uyarıyı çok mu görüyorsun?"}), "t": 3.4},
+                   "caption": "Bu uyarıyı gün bitmeden görüyorsan bataryana bir bakalım 🔋 Teknik servis için MEYDAN GSM."}],
+        "aksesuar": [{"tip": "story_kare", "veri": {"slide": R_("pov", 4.4, {"durum": "Şarjın %1, şarj aleti evde kaldı", "ifade": "saskin", "efektler": ["pil_dusuk", "ter"], "balon": "Neden hep ben?!"}), "t": 3.6, "kirp": 230},
+                      "caption": "POV: şarjın %1, şarj aleti evde 😩 Yedek şarj aleti, kablo ve araç şarjı için MEYDAN GSM'e uğra."}],
+        "ikinciel": [{"tip": "story_kare", "veri": {"slide": R_("pov", 4.4, {"durum": "Eski telefonun yıllardır çekmecede", "ifade": "uykulu", "efektler": [], "balon": "Beni takasa ver artık!"}), "t": 3.6, "kirp": 230},
+                      "caption": "Çekmecedeki eski telefon değerlensin! 🔄 Takas için modelini ve durumunu WhatsApp'tan yaz."}],
+        "tanitim": [{"tip": "story_kare", "veri": {"slide": R_("bildirim_yagmuru", 4.8, {"bildirimler": [["Ekran kırıldı mı?", "Tamir için getir"], ["Şarj mı tutmuyor?", "Birlikte bakalım"], ["İnternet yavaş mı?", "TurboBox 5G var"], ["Eski telefon çekmecede mi?", "Takas yapıyoruz"]], "cevap": "Hepsine tek adres: MEYDAN GSM"}), "t": 4.6},
+                     "caption": "Ekran, şarj, internet, takas… Hepsine tek adres: MEYDAN GSM 📍 Altınoluk"}],
+    }
+    for k, v in reels.items(): SENARYOLAR.setdefault(k, {}).setdefault("reel", []).extend(v)
+    for k, v in postlar.items(): SENARYOLAR.setdefault(k, {}).setdefault("post", []).extend(v)
+_ek2()
+
 def _sira_no(bugun, takvim, konu, slot):
     """Bu konunun bu slotta kacinci kez geldigi: haftada iki kez gelen konu (or. ipucu) her seferinde farkli icerik alir."""
     gunler = [g for g in GUNLER if takvim["gunler"][g][slot] == konu] or [gun_adi(bugun)]
@@ -578,6 +638,7 @@ def _etiket(konu):
 
 
 def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zorla_format=None):
+    from . import story_slides  # noqa: F401  (yeni slayt turlerini kaydeder)
     """Verilen gun ve slot (ogle/aksam) icin {konu, format, slides | post, caption, tema} dondurur."""
     konu = zorla_konu or takvim["gunler"][gun_adi(bugun)][slot]
     fmt = zorla_format or takvim["slotlar"][slot]["format"]

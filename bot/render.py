@@ -970,6 +970,17 @@ def render_post(d, shop, out_path, seed=0, theme=None):
     W, H = 1080, 1350
     if d["tip"] == "ozel_gun":
         return _render_ozel_gun(d["veri"], shop, out_path, seed)
+    if d["tip"] == "story_kare":  # Story slaytinin son karesi -> 4:5 gonderi
+        from . import story_slides  # noqa: F401
+        sl = d["veri"]["slide"]; Cc = Cache()
+        fr = Background(1080, 1920, seed).frame(2.0)
+        SLIDES[sl["tip"]](fr, d["veri"].get("t", sl["sure"] * 0.8), sl["sure"], sl.get("veri", {}), shop, Cc)
+        put(fr, brand_small(shop), 80, 170, 1.0, anchor="lm") if sl["tip"] in ("gelen_arama", "kirik_saka", "pil_uyari", "bildirim_yagmuru") else None
+        y0 = d["veri"].get("kirp", 120)
+        crop = fr.crop((0, y0, 1080, y0 + 1680)).resize((864, 1344), Image.LANCZOS)
+        out = Background(W, H, seed).frame(2.0); out.alpha_composite(crop, ((W - 864) // 2, 3))
+        out.convert("RGB").save(out_path, "JPEG", quality=92)
+        return
     canvas = Background(W, H, seed).frame(2.0)
     put(canvas, brand_small(shop, 42), 70, 90, anchor="lm")
     kind = d["tip"]; v = d["veri"]
