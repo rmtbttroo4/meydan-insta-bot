@@ -488,38 +488,81 @@ def klipe_cevir(slides):
 # ---------------- GUNLUK STORY ----------------
 # Her gun 10:00'da 1 Story (dikey kisa video, aciklamasiz). Gun gun farkli tur doner.
 def story_plan(bugun, shop, kampanyalar, takvim):
+    """Gunluk Story: 12 farkli Story formati sirayla doner (12 gunde bir tekrar), her turun metinleri de haftadan haftaya degisir."""
+    from . import story_slides  # noqa: F401  (Story slaytlarini kaydeder)
     og = ozel_gun(bugun)
-    sira = bugun.toordinal() * 2 + 7
-    tema = "gece" if (og and og.get("anma")) else TEMALAR[(bugun.toordinal() + 2) % len(TEMALAR)]
-    base = {"tarih": bugun.isoformat(), "slot": "story", "format": "story", "post": None, "caption": "", "seed": sira, "tema": tema}
+    o = bugun.toordinal(); v = o // 12  # v: ayni format tekrar geldiginde farkli metin
+    tema = "gece" if (og and og.get("anma")) else TEMALAR[(o * 3 + 1) % len(TEMALAR)]
+    base = {"tarih": bugun.isoformat(), "slot": "story", "format": "story", "post": None, "caption": "", "seed": o * 2 + 7, "tema": tema}
     if og and og.get("anma"):
         return {**base, "atla": "Anma günü: Story paylaşılmadı."}
+    pick = lambda xs: xs[v % len(xs)]
     gun = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"][bugun.weekday()]
-    secenekler = []
-    # 1) Meydi gunaydin
-    secenekler.append(("gunaydin", [MK(S(3.2, "goz_kirp", "el_salla", "Günaydın! Bugün 22:30'a kadar açığız", f"İyi {gun}lar!" if gun not in ("Salı", "Cuma") else f"Mutlu {gun}lar!")),
-                                    {"tip": "cta", "sure": 4.0, "veri": {**CTA_VARYANT[0], "maskot": False}}]))
-    # 2) aktif kampanya fiyat
-    k = kampanyalar.get("tarife")
-    if kampanya_gecerli(k, bugun):
-        secenekler.append(("tarife", tarife_fiyat_slaytlari(k, bugun, bugun.toordinal())[:1] + [{"tip": "cta", "sure": 4.0, "veri": {"ust": "Hattını Meydan'da aç", "buton": "WhatsApp'tan yaz!", "maskot": True}}]))
-    k = kampanyalar.get("turbobox")
-    if kampanya_gecerli(k, bugun):
-        secenekler.append(("turbobox", turbobox_fiyat_slaytlari(k, bugun, bugun.toordinal())[:1] + [{"tip": "cta", "sure": 4.0, "veri": {"ust": "İnternetin Meydan'da", "buton": "WhatsApp'tan yaz!", "maskot": True}}]))
-    # 3) A/B secim
-    secenekler.append(("secim", [{"tip": "secim", "sure": 4.6, "veri": {"soru": "Telefonun için hangisi?", "a": "Kılıf", "b": "Ekran koruyucu", "cevap": "İKİSİ DE!", "not": "Aksesuarlar MEYDAN GSM'de"}}]))
-    # 4) efsane / gercek
-    secenekler.append(("efsane", [{"tip": "efsane", "sure": 5.4, "veri": {"ust": "Doğru bilinen yanlış", "efsane": "Telefonu her seferinde %0'a kadar bitirip şarj etmek gerekir.", "gercek": "Lityum bataryalarda tam boşaltmaya gerek yok. Ara ara şarj etmek sorun değil."}}]))
-    # 5) kayan bant tanitim
-    secenekler.append(("bant", [{"tip": "bant", "sure": 4.2, "veri": {"kelimeler": ["SIFIR TELEFON", "İKİNCİ EL", "TAKAS", "TEKNİK SERVİS", "HAT İŞLEMLERİ", "AKSESUAR"], "orta": "Hepsi Meydan'da!"}}]))
-    # 6) Meydi servis kisa
-    secenekler.append(("servis", [MK(S(2.6, "agla", "titre", "Ekranım kırıldı!", "Başına geldi mi?", ["catlak"]),
-                                     S(2.8, "gulen", "sevin", "Meydan'da yeni gibi oldum!", "Teknik servis MEYDAN GSM'de", ["yara_bandi", "yildiz"]))]))
-    ad, slides = secenekler[bugun.toordinal() % len(secenekler)]
-    if not any(s["tip"] == "cta" for s in slides):
-        slides = slides + [{"tip": "cta", "sure": 3.8, "veri": {**CTA_VARYANT[bugun.toordinal() % len(CTA_VARYANT)], "maskot": True}}]
-    slides, kul = klipe_cevir(slides)
-    return {**base, "konu": f"story-{ad}", "slides": slides}
+    cta = lambda: {"tip": "cta", "sure": 3.6, "veri": {**CTA_VARYANT[o % len(CTA_VARYANT)], "maskot": True}}
+    ikinci = None
+
+    def f_kirik():
+        return [{"tip": "kirik_saka", "sure": 5.2, "veri": {"once": pick(["Telefonunu sıkı tut…", "Bir saniye, dur…", "Dikkat et…"]),
+                 "sonra": "Korkma, senin ekranın sağlam.", "mesaj": pick(["Kırılırsa adres belli: MEYDAN GSM", "Ekran koruyucun var mı?", "Kırık ekranlar MEYDAN GSM'de yenilenir"])}}, cta()]
+    def f_arama():
+        return [{"tip": "gelen_arama", "sure": 4.6, "veri": {"alt": "arıyor…", "mesaj": pick(["Ekranın mı kırık? Hemen getir!", "Eski telefonunu takasla!", "Yazlığa internet mi? TurboBox 5G!", "Numaranı taşı, Türk Telekom'a geç!"])}}, cta()]
+    def f_pil():
+        return [{"tip": "pil_uyari", "sure": 4.4, "veri": {"baslik": "Pil Zayıf", "metin": "%1 pil kaldı. Şarj aletini bağlayın.",
+                 "mesaj": pick(["Pilin gün bitmeden bitiyorsa teknik servis MEYDAN GSM'de", "Doğru şarj aleti bataryanı korur. Aksesuarlar MEYDAN GSM'de"])}}, cta()]
+    def f_yagmur():
+        setler = [
+            ([["Ekran kırıldı mı?", "Tamir için getir"], ["Şarj mı tutmuyor?", "Birlikte bakalım"], ["İnternet yavaş mı?", "TurboBox 5G var"], ["Eski telefon çekmecede mi?", "Takas yapıyoruz"]], "Hepsine tek adres: MEYDAN GSM"),
+            ([["Kılıfın eskidi mi?", "Yenileri geldi"], ["Kablon mu koptu?", "Şarj aksesuarları burada"], ["Numaranı taşımak mı istiyorsun?", "Kimliğinle gel"], ["Yeni telefon mu bakıyorsun?", "Stok için yaz"]], "Telefonla ilgili her şey MEYDAN GSM'de"),
+        ]
+        bl, cv = pick(setler)
+        return [{"tip": "bildirim_yagmuru", "sure": 4.6, "veri": {"bildirimler": bl, "cevap": cv}}, cta()]
+    def f_durdur():
+        ws = pick([["Kılıf", "Ekran koruyucu", "Şarj kablosu", "Kulaklık", "Araç şarjı", "Powerbank", "Şarj aleti", "Telefon tutucu"],
+                   ["Takas", "Yeni telefon", "Ekran tamiri", "Hat işlemleri", "TurboBox", "Kılıf", "Pil kontrolü", "İkinci el"]])
+        return [{"tip": "durdur", "sure": 4.2, "veri": {"kelimeler": ws}}, cta()]
+    def f_quiz():
+        nonlocal ikinci
+        q = pick([
+            {"soru": "Bataryanın en büyük düşmanı hangisi?", "siklar": ["Gece şarj etmek", "Sıcak", "Kılıf"], "dogru": 1, "aciklama": "Telefonu güneşte ve sıcak arabada bırakma!"},
+            {"soru": "Ekranı en iyi ne korur?", "siklar": ["Sadece kılıf", "Sadece ekran koruyucu", "İkisi birlikte"], "dogru": 2, "aciklama": "Kılıf düşmeye, ekran koruyucu çizik ve darbeye karşı."},
+            {"soru": "Numaranı değiştirmeden operatör değiştirebilir misin?", "siklar": ["Evet", "Hayır", "Sadece yeni hatta"], "dogru": 0, "aciklama": "Numara taşıma ile numaran aynı kalır. Kimliğinle gel!"},
+        ])
+        ikinci = [{"tip": "quiz", "sure": 4.4, "veri": {**q, "cevap": True}}, cta()]
+        return [{"tip": "quiz", "sure": 4.6, "veri": q}]
+    def f_saat():
+        return [{"tip": "saat", "sure": 4.2, "veri": {"ust": pick(["Her gün", f"Bugün {gun}", "Hafta sonu dahil"]), "mesaj": pick(["Biz buradayız!", "Altınoluk'ta seni bekliyoruz"])}}, cta()]
+    def f_pov():
+        x = pick([
+            {"durum": "Şarjın %1, şarj aleti evde kaldı", "ifade": "saskin", "efektler": ["pil_dusuk", "ter"], "balon": "Neden hep ben?!"},
+            {"durum": "Telefon elinden kaydı, ekran yere doğru…", "ifade": "agla", "efektler": ["catlak"], "balon": "Ekran koruyucu takmıştım değil mi?"},
+            {"durum": "Yazlıktasın ve internet çekmiyor", "ifade": "uzgun", "efektler": [], "balon": "TurboBox nerede?!"},
+            {"durum": "Eski telefonun yıllardır çekmecede", "ifade": "uykulu", "efektler": [], "balon": "Beni takasa ver artık!"},
+        ])
+        return [{"tip": "pov", "sure": 4.4, "veri": x}, cta()]
+    def f_fiyat():
+        k = kampanyalar.get("tarife") if v % 2 == 0 else kampanyalar.get("turbobox")
+        if kampanya_gecerli(k, bugun):
+            sl = tarife_fiyat_slaytlari(k, bugun, o) if "dakika_sms" in k else turbobox_fiyat_slaytlari(k, bugun, o)
+            return sl[:1] + [cta()]
+        return f_kirik()
+    def f_efsane():
+        return [{"tip": "efsane", "sure": 5.4, "veri": pick([
+            {"ust": "Doğru bilinen yanlış", "efsane": "Telefonu her seferinde %0'a kadar bitirip şarj etmek gerekir.", "gercek": "Lityum bataryalarda tam boşaltmaya gerek yok. Ara ara şarj etmek sorun değil."},
+            {"ust": "Doğru bilinen yanlış", "efsane": "Yeni telefonu ilk şarjda saatlerce şarjda bırakmak gerekir.", "gercek": "Günümüz bataryalarında buna gerek yok. Normal şekilde kullanabilirsin."}])}, cta()]
+    def f_gunaydin():
+        return [MK(S(3.2, "goz_kirp", "el_salla", "Günaydın! Bugün 22:30'a kadar açığız", f"İyi {gun}lar!" if gun not in ("Salı", "Cuma") else f"Mutlu {gun}lar!")), cta()]
+    def f_bant():
+        return [{"tip": "bant", "sure": 4.2, "veri": {"kelimeler": ["SIFIR TELEFON", "İKİNCİ EL", "TAKAS", "TEKNİK SERVİS", "HAT İŞLEMLERİ", "AKSESUAR"], "orta": "Hepsi Meydan'da!"}}, cta()]
+
+    formatlar = [("kirik", f_kirik), ("quiz", f_quiz), ("arama", f_arama), ("fiyat", f_fiyat), ("pov", f_pov), ("yagmur", f_yagmur),
+                 ("pil", f_pil), ("durdur", f_durdur), ("efsane", f_efsane), ("saat", f_saat), ("gunaydin", f_gunaydin), ("bant", f_bant)]
+    ad, fn = formatlar[(o + 1) % len(formatlar)]
+    slides = fn()
+    slides, _ = klipe_cevir(slides)
+    plan = {**base, "konu": f"story-{ad}", "slides": slides}
+    if ikinci:
+        plan["ikinci"] = ikinci
+    return plan
 
 def _sira_no(bugun, takvim, konu, slot):
     """Bu konunun bu slotta kacinci kez geldigi: haftada iki kez gelen konu (or. ipucu) her seferinde farkli icerik alir."""

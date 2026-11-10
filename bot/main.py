@@ -103,6 +103,8 @@ def run_one(g, slot, a, shop, kamp, takvim):
     print(f"[{plan['tarih']} {slot}] konu={plan['konu']} format={plan['format']}")
     path = build(plan, shop, a.out)
     print("  ->", path)
+    if a.dry_run and plan.get("ikinci"):
+        print("  ->", build({**plan, "konu": plan["konu"] + "-cevap", "slides": plan["ikinci"]}, shop, a.out))
     if a.dry_run:
         return
 
@@ -132,7 +134,15 @@ def run_one(g, slot, a, shop, kamp, takvim):
         from . import facebook
         fb_satir = ""
         if plan["format"] == "story":
-            notify.send(f"✅ MEYDAN GSM: Story paylaşıldı ({plan['konu']})", f"Tarih: {plan['tarih']}\nTür: {plan['konu']}\nDosya: {url}")
+            ek = ""
+            if plan.get("ikinci"):  # iki parcali Story (or. soru -> cevap)
+                import time as _t
+                p2 = {**plan, "konu": plan["konu"] + "-cevap", "slides": plan["ikinci"]}
+                path2 = build(p2, shop, a.out)
+                url2 = storage.upload(path2, f"instagram/{os.path.basename(path2)}", "video/mp4")
+                _t.sleep(20)
+                instagram.publish(url2, "", "story"); ek = f"\n2. parça: {url2}"
+            notify.send(f"✅ MEYDAN GSM: Story paylaşıldı ({plan['konu']})", f"Tarih: {plan['tarih']}\nTür: {plan['konu']}\nDosya: {url}{ek}")
             print("  story paylasildi:", media_id); return
         if facebook.enabled():
             try:
