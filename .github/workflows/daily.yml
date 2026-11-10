@@ -22,6 +22,9 @@ on:
       konu:
         description: "Konuyu zorla (bos birak = takvime gore)"
         required: false
+      tarih:
+        description: "Tarihi zorla, YYYY-AA-GG (bos birak = bugun; sadece test icin)"
+        required: false
       mod:
         description: "test = uret+yukle+Instagram'da hazirla ama YAYINLAMA, uret = sadece dosya uret, paylas = gercekten paylas"
         type: choice
@@ -60,6 +63,7 @@ jobs:
           EVENT_SCHEDULE: ${{ github.event.schedule }}
           IN_SLOT: ${{ github.event.inputs.slot }}
           IN_KONU: ${{ github.event.inputs.konu }}
+          IN_TARIH: ${{ github.event.inputs.tarih }}
           IN_MOD: ${{ github.event.inputs.mod }}
         run: |
           # Zamanlanmis calismada slot, cron'un saat alanindan bulunur (8-9 UTC = ogle, 15-16 UTC = aksam).
@@ -74,6 +78,7 @@ jobs:
           else SLOT="${IN_SLOT:-ogle}"; fi
           ARGS="--slot $SLOT"
           if [ -n "$IN_KONU" ]; then ARGS="$ARGS --konu $IN_KONU"; fi
+          if [ -n "$IN_TARIH" ]; then ARGS="$ARGS --tarih $IN_TARIH"; fi
           if [ "$IN_MOD" = "test" ]; then ARGS="$ARGS --test"; fi
           if [ "$IN_MOD" = "uret" ]; then ARGS="$ARGS --dry-run"; fi
           echo "Calisiyor: $ARGS"
