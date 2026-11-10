@@ -108,6 +108,9 @@ def publish(media_url, caption, kind, test=False):
     params = {"caption": caption, "access_token": _tok()}
     if kind == "reel":
         params.update({"media_type": "REELS", "video_url": media_url, "share_to_feed": "true"})
+    elif kind == "story":
+        params = {"media_type": "STORIES", "access_token": _tok()}
+        params["video_url" if media_url.endswith(".mp4") else "image_url"] = media_url
     else:
         params.update({"image_url": media_url})
     api, uid = _resolve()
@@ -137,6 +140,23 @@ def already_posted(caption, hours=20):
         if (now - ts).total_seconds() < hours * 3600 and (m.get("caption") or "").strip().split("\n")[0].strip() == first:
             return m.get("permalink") or m.get("id")
     return None
+
+
+def story_var_mi(saat=3):
+    """Son X saatte paylasilmis Story var mi? (yedek saatlerde cift Story'yi onler)"""
+    import datetime as _dt
+    api, uid = _resolve()
+    code, j = _get(api, f"{uid}/stories", fields="timestamp")
+    if code != 200:
+        print("[story kontrol] okunamadi, kontrol atlandi"); return False
+    now = _dt.datetime.now(_dt.timezone.utc)
+    for m in j.get("data") or []:
+        try:
+            ts = _dt.datetime.strptime(m.get("timestamp", ""), "%Y-%m-%dT%H:%M:%S%z")
+            if (now - ts).total_seconds() < saat * 3600: return True
+        except Exception:
+            continue
+    return False
 
 
 def permalink(media_id):

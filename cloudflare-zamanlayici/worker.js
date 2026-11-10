@@ -1,6 +1,7 @@
 // MEYDAN GSM Instagram zamanlayicisi (Cloudflare Worker)
 // Her gun tam saatinde GitHub'daki "Gunluk Instagram paylasimi" isini baslatir.
 // Cron Triggers (UTC, Turkiye = UTC+3):
+//   58 6 * * *   -> 09:58 TR -> gunluk Story (10:00'da yayinda)
 //   58 8 * * *   -> 11:58 TR -> ogle gonderisi (12:00'de yayinda)
 //   56 15 * * *  -> 18:56 TR -> aksam Reels'i  (19:00'da yayinda)
 // Gerekli gizli degisken: GH_TOKEN (sadece bu depoda "Actions: Read and write" izinli GitHub token'i)
@@ -28,7 +29,7 @@ async function trigger(env, slot) {
 
 export default {
   async scheduled(event, env, ctx) {
-    const slot = event.cron.startsWith("58 8") ? "ogle" : "aksam";
+    const slot = event.cron.startsWith("58 6") ? "story" : event.cron.startsWith("58 8") ? "ogle" : "aksam";
     ctx.waitUntil(trigger(env, slot));
   },
   async fetch() {

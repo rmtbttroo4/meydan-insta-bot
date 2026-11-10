@@ -4,6 +4,8 @@ name: Gunluk Instagram paylasimi
 # GitHub zamanlanmis isleri birkac dakika gecikmeli baslatabildigi icin 8 dakika erken tetiklenir.
 on:
   schedule:
+    - cron: "52 6 * * *"    # 09:52 TR -> story (10:00 civari)
+    - cron: "17 7 * * *"    # 10:17 TR -> story yedek
     - cron: "52 8 * * *"    # 11:52 TR -> ogle (gorsel gonderi)
     - cron: "17 9 * * *"    # 12:17 TR -> ogle yedek (zaten paylasildiysa atlar)
     - cron: "47 9 * * *"    # 12:47 TR -> ogle yedek
@@ -15,7 +17,7 @@ on:
       slot:
         description: "Hangi paylasim? ogle = gorsel gonderi, aksam = Reels"
         type: choice
-        options: [ogle, aksam]
+        options: [ogle, aksam, story]
         default: ogle
       konu:
         description: "Konuyu zorla (bos birak = takvime gore)"
@@ -63,9 +65,10 @@ jobs:
           # Zamanlanmis calismada slot, cron'un saat alanindan bulunur (8-9 UTC = ogle, 15-16 UTC = aksam).
           if [ -n "$EVENT_SCHEDULE" ]; then
             H=$(echo "$EVENT_SCHEDULE" | awk '{print $2}')
-            case "$H" in 8|9) SLOT=ogle ;; 15|16) SLOT=aksam ;; *) echo "Bilinmeyen cron: $EVENT_SCHEDULE"; exit 1 ;; esac
+            case "$H" in 6|7) SLOT=story ;; 8|9) SLOT=ogle ;; 15|16) SLOT=aksam ;; *) echo "Bilinmeyen cron: $EVENT_SCHEDULE"; exit 1 ;; esac
             # GitHub bazen saatlerce gec baslatir: paylasim saatinden 2 saatten fazla gecmisse paylasma.
             NOW=$(date -u +%H | sed 's/^0//')
+            if [ "$SLOT" = story ] && { [ "$NOW" -lt 6 ] || [ "$NOW" -gt 8 ]; }; then echo "Cok gec basladi (UTC $NOW), story atlandi."; exit 0; fi
             if [ "$SLOT" = ogle ] && { [ "$NOW" -lt 8 ] || [ "$NOW" -gt 10 ]; }; then echo "Cok gec basladi (UTC $NOW), ogle paylasimi atlandi."; exit 0; fi
             if [ "$SLOT" = aksam ] && { [ "$NOW" -lt 15 ] || [ "$NOW" -gt 17 ]; }; then echo "Cok gec basladi (UTC $NOW), aksam paylasimi atlandi."; exit 0; fi
           else SLOT="${IN_SLOT:-ogle}"; fi

@@ -28,7 +28,7 @@ def build(plan, shop, outdir):
     if plan.get("hazir"):  # elle hazirlanmis video (or. Gemini + temiz yazi)
         import shutil
         path = base + ".mp4"; shutil.copyfile(os.path.join(ROOT, plan["hazir"]), path)
-    elif plan["format"] == "reel":
+    elif plan["format"] in ("reel", "story"):
         dur = sum(s["sure"] for s in plan["slides"])
         cuts, acc = [], 0
         for s in plan["slides"][:-1]:
@@ -52,7 +52,7 @@ def main():
     ap.add_argument("--test", action="store_true", help="her seyi dene ama Instagram'da yayinlama")
     ap.add_argument("--hafta", action="store_true")
     ap.add_argument("--tarih")
-    ap.add_argument("--slot", choices=["ogle", "aksam"])
+    ap.add_argument("--slot", choices=["ogle", "aksam", "story"])
     ap.add_argument("--konu"); ap.add_argument("--format", choices=["reel", "post"])
     ap.add_argument("--out", default=os.path.join(ROOT, "out"))
     a = ap.parse_args()
@@ -96,7 +96,7 @@ def send_tiktok_mail(plan, path, notify):
 
 
 def run_one(g, slot, a, shop, kamp, takvim):
-    plan = content.plan_for(g, shop, kamp, takvim, slot, a.konu, a.format)
+    plan = content.story_plan(g, shop, kamp, takvim) if slot == "story" else content.plan_for(g, shop, kamp, takvim, slot, a.konu, a.format)
     if plan.get("atla"):
         print(f"[{plan['tarih']} {slot}] {plan['atla']}")
         return
@@ -108,7 +108,10 @@ def run_one(g, slot, a, shop, kamp, takvim):
 
     from . import storage, instagram, notify
     try:
-        if not a.test:
+        if not a.test and plan["format"] == "story":
+            if instagram.story_var_mi(saat=3):
+                print("  Son 3 saatte Story zaten var, atlaniyor."); return
+        elif not a.test:
             onceki = instagram.already_posted(plan["caption"])
             if onceki:
                 print("  Bu gonderi zaten paylasilmis, atlaniyor:", onceki)
@@ -128,6 +131,9 @@ def run_one(g, slot, a, shop, kamp, takvim):
         link = instagram.permalink(media_id) or "(link alinamadi)"
         from . import facebook
         fb_satir = ""
+        if plan["format"] == "story":
+            notify.send(f"✅ MEYDAN GSM: Story paylaşıldı ({plan['konu']})", f"Tarih: {plan['tarih']}\nTür: {plan['konu']}\nDosya: {url}")
+            print("  story paylasildi:", media_id); return
         if facebook.enabled():
             try:
                 fb_satir = "\nFacebook: " + facebook.publish(url, plan["caption"], plan["format"])

@@ -484,6 +484,43 @@ def klipe_cevir(slides):
         out.append(sl)
     return out, kul
 
+
+# ---------------- GUNLUK STORY ----------------
+# Her gun 10:00'da 1 Story (dikey kisa video, aciklamasiz). Gun gun farkli tur doner.
+def story_plan(bugun, shop, kampanyalar, takvim):
+    og = ozel_gun(bugun)
+    sira = bugun.toordinal() * 2 + 7
+    tema = "gece" if (og and og.get("anma")) else TEMALAR[(bugun.toordinal() + 2) % len(TEMALAR)]
+    base = {"tarih": bugun.isoformat(), "slot": "story", "format": "story", "post": None, "caption": "", "seed": sira, "tema": tema}
+    if og and og.get("anma"):
+        return {**base, "atla": "Anma günü: Story paylaşılmadı."}
+    gun = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"][bugun.weekday()]
+    secenekler = []
+    # 1) Meydi gunaydin
+    secenekler.append(("gunaydin", [MK(S(3.2, "goz_kirp", "el_salla", "Günaydın! Bugün 22:30'a kadar açığız", f"İyi {gun}lar!" if gun not in ("Salı", "Cuma") else f"Mutlu {gun}lar!")),
+                                    {"tip": "cta", "sure": 4.0, "veri": {**CTA_VARYANT[0], "maskot": False}}]))
+    # 2) aktif kampanya fiyat
+    k = kampanyalar.get("tarife")
+    if kampanya_gecerli(k, bugun):
+        secenekler.append(("tarife", tarife_fiyat_slaytlari(k, bugun, bugun.toordinal())[:1] + [{"tip": "cta", "sure": 4.0, "veri": {"ust": "Hattını Meydan'da aç", "buton": "WhatsApp'tan yaz!", "maskot": True}}]))
+    k = kampanyalar.get("turbobox")
+    if kampanya_gecerli(k, bugun):
+        secenekler.append(("turbobox", turbobox_fiyat_slaytlari(k, bugun, bugun.toordinal())[:1] + [{"tip": "cta", "sure": 4.0, "veri": {"ust": "İnternetin Meydan'da", "buton": "WhatsApp'tan yaz!", "maskot": True}}]))
+    # 3) A/B secim
+    secenekler.append(("secim", [{"tip": "secim", "sure": 4.6, "veri": {"soru": "Telefonun için hangisi?", "a": "Kılıf", "b": "Ekran koruyucu", "cevap": "İKİSİ DE!", "not": "Aksesuarlar MEYDAN GSM'de"}}]))
+    # 4) efsane / gercek
+    secenekler.append(("efsane", [{"tip": "efsane", "sure": 5.4, "veri": {"ust": "Doğru bilinen yanlış", "efsane": "Telefonu her seferinde %0'a kadar bitirip şarj etmek gerekir.", "gercek": "Lityum bataryalarda tam boşaltmaya gerek yok. Ara ara şarj etmek sorun değil."}}]))
+    # 5) kayan bant tanitim
+    secenekler.append(("bant", [{"tip": "bant", "sure": 4.2, "veri": {"kelimeler": ["SIFIR TELEFON", "İKİNCİ EL", "TAKAS", "TEKNİK SERVİS", "HAT İŞLEMLERİ", "AKSESUAR"], "orta": "Hepsi Meydan'da!"}}]))
+    # 6) Meydi servis kisa
+    secenekler.append(("servis", [MK(S(2.6, "agla", "titre", "Ekranım kırıldı!", "Başına geldi mi?", ["catlak"]),
+                                     S(2.8, "gulen", "sevin", "Meydan'da yeni gibi oldum!", "Teknik servis MEYDAN GSM'de", ["yara_bandi", "yildiz"]))]))
+    ad, slides = secenekler[bugun.toordinal() % len(secenekler)]
+    if not any(s["tip"] == "cta" for s in slides):
+        slides = slides + [{"tip": "cta", "sure": 3.8, "veri": {**CTA_VARYANT[bugun.toordinal() % len(CTA_VARYANT)], "maskot": True}}]
+    slides, kul = klipe_cevir(slides)
+    return {**base, "konu": f"story-{ad}", "slides": slides}
+
 def _sira_no(bugun, takvim, konu, slot):
     """Bu konunun bu slotta kacinci kez geldigi: haftada iki kez gelen konu (or. ipucu) her seferinde farkli icerik alir."""
     gunler = [g for g in GUNLER if takvim["gunler"][g][slot] == konu] or [gun_adi(bugun)]
