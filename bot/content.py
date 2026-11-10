@@ -620,7 +620,8 @@ def _ek2():
         "tanitim": [{"tip": "story_kare", "veri": {"slide": R_("bildirim_yagmuru", 4.8, {"bildirimler": [["Ekran kırıldı mı?", "Tamir için getir"], ["Şarj mı tutmuyor?", "Birlikte bakalım"], ["İnternet yavaş mı?", "TurboBox 5G var"], ["Eski telefon çekmecede mi?", "Takas yapıyoruz"]], "cevap": "Hepsine tek adres: MEYDAN GSM"}), "t": 4.6},
                      "caption": "Ekran, şarj, internet, takas… Hepsine tek adres: MEYDAN GSM 📍 Altınoluk"}],
     }
-    for k, v in reels.items(): SENARYOLAR.setdefault(k, {}).setdefault("reel", []).extend(v)
+    for k, v in reels.items():  # yeni dikkat cekici kurgular havuzun basina: ilk once onlar gelir
+        lst = SENARYOLAR.setdefault(k, {}).setdefault("reel", []); lst[:0] = v
     for k, v in postlar.items(): SENARYOLAR.setdefault(k, {}).setdefault("post", []).extend(v)
 _ek2()
 
