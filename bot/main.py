@@ -27,7 +27,7 @@ def build(plan, shop, outdir):
     base = os.path.join(outdir, f"{plan['tarih']}_{plan['slot']}_{plan['konu']}")
     if plan.get("hazir"):  # elle hazirlanmis video (or. Gemini + temiz yazi)
         import shutil
-        path = base + ".mp4"; shutil.copyfile(os.path.join(ROOT, plan["hazir"]), path)
+        path = base + os.path.splitext(plan["hazir"])[1]; shutil.copyfile(os.path.join(ROOT, plan["hazir"]), path)
     elif plan["format"] in ("reel", "story"):
         dur = sum(s["sure"] for s in plan["slides"])
         cuts, acc = [], 0

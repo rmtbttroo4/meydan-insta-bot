@@ -662,9 +662,9 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
         caption = f"{tek['caption']}\n\n{iletisim(shop)}\n\n" + hashtags(shop, tek.get("etiketler", []))
         return {"tarih": bugun.isoformat(), "slot": slot, "konu": tek.get("konu", "kampanya"), "format": tek.get("format", "reel"),
                 "slides": tek["slides"], "post": None, "caption": caption, "seed": sira, "tema": tema}
-    if tek and fmt == "reel" and tek.get("hazir"):
+    if tek and tek.get("hazir"):  # hazir video (.mp4 -> reel) veya hazir gorsel (.jpg -> post)
         caption = f"{tek['caption']}\n\n{iletisim(shop)}\n\n" + hashtags(shop, tek.get("etiketler", []))
-        return {"tarih": bugun.isoformat(), "slot": slot, "konu": tek.get("konu", "hazir"), "format": "reel", "slides": None, "post": None,
+        return {"tarih": bugun.isoformat(), "slot": slot, "konu": tek.get("konu", "hazir"), "format": "post" if tek["hazir"].endswith(".jpg") else "reel", "slides": None, "post": None,
                 "caption": caption, "seed": sira, "tema": tema, "hazir": tek["hazir"]}
     if tek and fmt == "reel" and tek.get("maskot_konu") in MASKOT_SENARYO:
         s_ = MASKOT_SENARYO[tek["maskot_konu"]][tek.get("sira", 0)]
