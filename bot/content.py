@@ -658,6 +658,10 @@ def plan_for(bugun, shop, kampanyalar, takvim, slot="aksam", zorla_konu=None, zo
                 "post": {"tip": "ozel_gun", "veri": og}, "caption": caption, "seed": sira, "tema": tema}
 
     tek = takvim.get("tek_seferlik", {}).get(f"{bugun.isoformat()}_{slot}") if not zorla_konu else None
+    if tek and tek.get("slides"):  # bir defaya mahsus hazir senaryo (or. yeni kampanya)
+        caption = f"{tek['caption']}\n\n{iletisim(shop)}\n\n" + hashtags(shop, tek.get("etiketler", []))
+        return {"tarih": bugun.isoformat(), "slot": slot, "konu": tek.get("konu", "kampanya"), "format": tek.get("format", "reel"),
+                "slides": tek["slides"], "post": None, "caption": caption, "seed": sira, "tema": tema}
     if tek and fmt == "reel" and tek.get("hazir"):
         caption = f"{tek['caption']}\n\n{iletisim(shop)}\n\n" + hashtags(shop, tek.get("etiketler", []))
         return {"tarih": bugun.isoformat(), "slot": slot, "konu": tek.get("konu", "hazir"), "format": "reel", "slides": None, "post": None,

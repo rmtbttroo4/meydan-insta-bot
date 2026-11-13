@@ -64,7 +64,69 @@
     "not": "5G kapsama alanındaki adreslerde. 12 fatura dönemi taahhütlü.",
     "bitis_teyitli": false
   },
-  "diger": [],
+  "diger": [
+    {
+      "aktif": true,
+      "gecerlilik_bitis": "2026-11-30",
+      "bitis_teyitli": false,
+      "ust": "Kısa süre için",
+      "baslik": "Fırsatı kaçırma! 2 GB + 500 DK + 500 SMS",
+      "urun": "2 GB · 500 DK · 500 SMS",
+      "fiyat": "260",
+      "birim": "TL",
+      "rozet": "Türk Telekomlular ile sınırsız konuşma",
+      "aciklama": "Hattını taşıyanlara veya yeni hat alanlara özel",
+      "not": "5 GB 300 TL · 10 GB 350 TL · 20 GB 400 TL · 30 GB 500 TL. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+    },
+    {
+      "aktif": true,
+      "gecerlilik_bitis": "2026-11-30",
+      "bitis_teyitli": false,
+      "ust": "Evde İnternet + Tivibu",
+      "baslik": "Evde İnternet ve Tivibu alana Netflix ilk 6 ay hediye",
+      "aciklama": "Yeni bireysel müşterilere",
+      "not": "Kampanya 18 ay taahhütlüdür. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+    },
+    {
+      "aktif": true,
+      "gecerlilik_bitis": "2026-11-30",
+      "bitis_teyitli": false,
+      "ust": "Selfy 1+1 · 7–25 yaş",
+      "baslik": "Selfy Artı 5+5: 10 GB internet",
+      "urun": "Selfy Artı 5+5 · 10 GB",
+      "fiyat": "380",
+      "birim": "TL",
+      "rozet": "800 DK + 300 SMS",
+      "aciklama": "Gençlere özel 1+1 tarifeler",
+      "not": "Taahhütlü ücrettir. 10+10 480 TL · 15+15 580 TL · 20+20 680 TL. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+    },
+    {
+      "aktif": true,
+      "gecerlilik_bitis": "2026-11-30",
+      "bitis_teyitli": false,
+      "ust": "Yeni Nesil 5G Tarifeler",
+      "baslik": "Prime 75 GB + sınırsız dakika ve SMS",
+      "urun": "Prime 75 GB",
+      "fiyat": "1.100",
+      "birim": "TL",
+      "rozet": "Sınırsız DK & SMS",
+      "aciklama": "100 GB 1.200 TL · 150 GB 1.400 TL · Sınırsız 1.600 TL",
+      "not": "Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+    },
+    {
+      "aktif": true,
+      "gecerlilik_bitis": "2026-11-30",
+      "bitis_teyitli": false,
+      "ust": "Lider Tarifeler",
+      "baslik": "Lider 10 GB + 1000 DK + 250 SMS",
+      "urun": "Lider 10 GB",
+      "fiyat": "450",
+      "birim": "TL",
+      "rozet": "1000 DK + 250 SMS",
+      "aciklama": "1 GB 350 TL'den 80 GB 1.000 TL'ye kadar",
+      "not": "Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+    }
+  ],
   "_ornek_diger": {
     "aktif": true,
     "gecerlilik_bitis": "2026-12-31",

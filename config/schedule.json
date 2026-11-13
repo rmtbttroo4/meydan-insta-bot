@@ -55,6 +55,73 @@
         "#teknoloji",
         "#maskot"
       ]
+    },
+    "2026-11-13_ogle": {
+      "format": "reel",
+      "slides": [
+        {
+          "tip": "hook",
+          "sure": 2.6,
+          "veri": {
+            "ust": "Kısa süre için",
+            "vurgu": "FIRSATI KAÇIRMA!",
+            "alt": "Türk Telekom'a geç"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.8,
+          "veri": {
+            "ust": "Hattını taşıyanlara veya yeni hat alanlara",
+            "paket": "2 GB",
+            "yeni": "260",
+            "birim": "TL",
+            "rozet": "500 DK + 500 SMS",
+            "alt": "Türk Telekomlular ile sınırsız aşımsız konuşma"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.8,
+          "veri": {
+            "ust": "Hattını taşıyanlara veya yeni hat alanlara",
+            "paket": "10 GB",
+            "yeni": "350",
+            "birim": "TL",
+            "rozet": "500 DK + 500 SMS",
+            "alt": "Türk Telekomlular ile sınırsız aşımsız konuşma"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.8,
+          "veri": {
+            "ust": "Hattını taşıyanlara veya yeni hat alanlara",
+            "paket": "30 GB",
+            "yeni": "500",
+            "birim": "TL",
+            "rozet": "500 DK + 500 SMS",
+            "alt": "Türk Telekomlular ile sınırsız aşımsız konuşma",
+            "not": "Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+          }
+        },
+        {
+          "tip": "cta",
+          "sure": 4.5,
+          "veri": {
+            "ust": "Hattını Meydan'da taşı",
+            "buton": "WhatsApp'tan yaz!",
+            "maskot": true
+          }
+        }
+      ],
+      "caption": "⏰ Kısa süre için FIRSATI KAÇIRMA!\nHattını Türk Telekom'a taşıyanlara veya yeni hat alanlara özel:\n▫️ 2 GB + 500 DK + 500 SMS: 260 TL\n▫️ 5 GB: 300 TL\n▫️ 10 GB: 350 TL\n▫️ 20 GB: 400 TL\n▫️ 30 GB: 500 TL\n📞 Tüm paketlerde Türk Telekomlular ile sınırsız aşımsız konuşma!\n\n*Koşullar ve güncel kampanya detayları için mağazamıza danışın.",
+      "etiketler": [
+        "#türktelekom",
+        "#numarataşıma",
+        "#fırsat"
+      ],
+      "konu": "kampanya"
     }
   }
 }
