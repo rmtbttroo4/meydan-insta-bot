@@ -122,6 +122,252 @@
         "#fırsat"
       ],
       "konu": "kampanya"
+    },
+    "2026-11-13_aksam": {
+      "format": "reel",
+      "konu": "kampanya",
+      "etiketler": [
+        "#türktelekom",
+        "#5G",
+        "#sınırsız"
+      ],
+      "slides": [
+        {
+          "tip": "hook",
+          "sure": 2.6,
+          "veri": {
+            "ust": "Yeni Nesil 5G Tarifeler",
+            "vurgu": "SINIRSIZ DK & SMS",
+            "alt": "Bol internetle"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Yeni Nesil 5G",
+            "paket": "Prime 75 GB",
+            "yeni": "1.100",
+            "birim": "TL",
+            "rozet": "Sınırsız DK & SMS",
+            "alt": "Türk Telekom 5G tarifeleri"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Yeni Nesil 5G",
+            "paket": "150 GB",
+            "yeni": "1.400",
+            "birim": "TL",
+            "rozet": "Sınırsız DK & SMS",
+            "alt": "Türk Telekom 5G tarifeleri"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Yeni Nesil 5G",
+            "paket": "Sınırsız GB",
+            "yeni": "1.600",
+            "birim": "TL",
+            "rozet": "Sınırsız DK & SMS",
+            "alt": "Türk Telekom 5G tarifeleri",
+            "not": "Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+          }
+        },
+        {
+          "tip": "cta",
+          "sure": 4.5,
+          "veri": {
+            "ust": "5G'ye Meydan'da geç",
+            "buton": "WhatsApp'tan yaz!",
+            "maskot": true
+          }
+        }
+      ],
+      "caption": "🚀 Yeni Nesil 5G Tarifeler Meydan GSM'de!\nTüm paketlerde sınırsız dakika & SMS:\n▫️ Prime 75 GB: 1.100 TL\n▫️ 100 GB: 1.200 TL\n▫️ 150 GB: 1.400 TL\n▫️ Sınırsız internet: 1.600 TL\n\n*Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+    },
+    "2026-11-14_ogle": {
+      "format": "reel",
+      "konu": "kampanya",
+      "etiketler": [
+        "#türktelekom",
+        "#selfy",
+        "#gençtarife"
+      ],
+      "slides": [
+        {
+          "tip": "hook",
+          "sure": 2.6,
+          "veri": {
+            "ust": "7–25 yaş arası gençlere",
+            "vurgu": "SELFY 1+1",
+            "alt": "İnternet ikiye katlanıyor"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Selfy Artı 5+5",
+            "paket": "10 GB",
+            "yeni": "380",
+            "birim": "TL",
+            "rozet": "800 DK + 300 SMS",
+            "alt": "Gençlere özel 1+1 tarife"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Selfy Artı 10+10",
+            "paket": "20 GB",
+            "yeni": "480",
+            "birim": "TL",
+            "rozet": "Gençlere özel",
+            "alt": "Selfy 1+1 tarifeleri"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Selfy Artı 20+20",
+            "paket": "40 GB",
+            "yeni": "680",
+            "birim": "TL",
+            "rozet": "Gençlere özel",
+            "alt": "Selfy 1+1 tarifeleri",
+            "not": "Taahhütlü ücrettir. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+          }
+        },
+        {
+          "tip": "cta",
+          "sure": 4.5,
+          "veri": {
+            "ust": "Selfy hattını Meydan'dan al",
+            "buton": "WhatsApp'tan yaz!",
+            "maskot": true
+          }
+        }
+      ],
+      "caption": "🎉 Selfy 1+1 ile internet ikiye katlanıyor!\n7–25 yaş arası gençlere özel:\n▫️ Selfy Artı 5+5 (10 GB, 800 DK, 300 SMS): 380 TL\n▫️ Selfy Artı 10+10: 480 TL\n▫️ Selfy Artı 15+15: 580 TL\n▫️ Selfy Artı 20+20: 680 TL\n\n*Taahhütlü ücretlerdir. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+    },
+    "2026-11-14_aksam": {
+      "format": "reel",
+      "konu": "kampanya",
+      "etiketler": [
+        "#türktelekom",
+        "#lidertarife",
+        "#faturalıhat"
+      ],
+      "slides": [
+        {
+          "tip": "hook",
+          "sure": 2.6,
+          "veri": {
+            "ust": "Türk Telekom",
+            "vurgu": "LİDER TARİFELER",
+            "alt": "Her ihtiyaca bir paket"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Lider Tarifeler",
+            "paket": "1 GB",
+            "yeni": "350",
+            "birim": "TL",
+            "rozet": "Lider tarife",
+            "alt": "Türk Telekom faturalı hat"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Lider Tarifeler",
+            "paket": "10 GB",
+            "yeni": "450",
+            "birim": "TL",
+            "rozet": "1000 DK + 250 SMS",
+            "alt": "Türk Telekom faturalı hat"
+          }
+        },
+        {
+          "tip": "fiyat",
+          "sure": 3.6,
+          "veri": {
+            "ust": "Lider Tarifeler",
+            "paket": "80 GB",
+            "yeni": "1.000",
+            "birim": "TL",
+            "rozet": "Lider tarife",
+            "alt": "Türk Telekom faturalı hat",
+            "not": "Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+          }
+        },
+        {
+          "tip": "cta",
+          "sure": 4.5,
+          "veri": {
+            "ust": "Lider tarifeni Meydan'da seç",
+            "buton": "WhatsApp'tan yaz!",
+            "maskot": true
+          }
+        }
+      ],
+      "caption": "🏆 Türk Telekom Lider Tarifeler Meydan GSM'de!\n▫️ 1 GB'tan başlayan paketler: 350 TL\n▫️ Lider 10 GB + 1000 DK + 250 SMS: 450 TL\n▫️ 80 GB'a kadar: 1.000 TL\nSana uygun paketi birlikte seçelim.\n\n*Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+    },
+    "2026-11-15_ogle": {
+      "format": "reel",
+      "konu": "kampanya",
+      "etiketler": [
+        "#türktelekom",
+        "#evinterneti",
+        "#tivibu",
+        "#netflix"
+      ],
+      "slides": [
+        {
+          "tip": "hook",
+          "sure": 2.6,
+          "veri": {
+            "ust": "Evde İnternet + Tivibu alana",
+            "vurgu": "NETFLIX HEDİYE!",
+            "alt": "İlk 6 ay bizden"
+          }
+        },
+        {
+          "tip": "bullets",
+          "sure": 4.2,
+          "veri": {
+            "baslik": "Evde İnternet + Tivibu",
+            "maddeler": [
+              "Netflix ilk 6 ay hediye",
+              "Yeni bireysel müşterilere",
+              "Başvuru Meydan GSM'de",
+              "18 ay taahhütlü kampanya"
+            ],
+            "ust": "Kampanya"
+          }
+        },
+        {
+          "tip": "cta",
+          "sure": 4.5,
+          "veri": {
+            "ust": "Evine interneti Meydan'dan bağlat",
+            "buton": "WhatsApp'tan yaz!",
+            "maskot": true
+          }
+        }
+      ],
+      "caption": "📺 Evde İnternet ve Tivibu alana Netflix ilk 6 ay hediye!\nYeni bireysel müşterilere özel. Altınoluk'ta ev interneti başvurunu Meydan GSM'de yap, gerisini biz halledelim.\n\n*Kampanya 18 ay taahhütlüdür. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
     }
   }
 }
