@@ -340,7 +340,7 @@
           "veri": {
             "ust": "Evde İnternet + Tivibu alana",
             "vurgu": "NETFLIX HEDİYE!",
-            "alt": "İlk 6 ay bizden"
+            "alt": "12 ay bizden"
           }
         },
         {
@@ -349,7 +349,7 @@
           "veri": {
             "baslik": "Evde İnternet + Tivibu",
             "maddeler": [
-              "Netflix ilk 6 ay hediye",
+              "Netflix 12 ay hediye",
               "Yeni bireysel müşterilere",
               "Başvuru Meydan GSM'de",
               "18 ay taahhütlü kampanya"
@@ -367,7 +367,7 @@
           }
         }
       ],
-      "caption": "📺 Evde İnternet ve Tivibu alana Netflix ilk 6 ay hediye!\nYeni bireysel müşterilere özel. Altınoluk'ta ev interneti başvurunu Meydan GSM'de yap, gerisini biz halledelim.\n\n*Kampanya 18 ay taahhütlüdür. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+      "caption": "📺 Evde İnternet ve Tivibu alana 12 ay Netflix hediye!\nYeni bireysel müşterilere özel. Altınoluk'ta ev interneti başvurunu Meydan GSM'de yap, gerisini biz halledelim.\n\n*Kampanya 18 ay taahhütlüdür. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
     },
     "2026-11-13_aksam": {
       "hazir": "assets/hazir/netflix_tivibu_afis.jpg",
@@ -378,7 +378,7 @@
         "#tivibu",
         "#netflix"
       ],
-      "caption": "📺 Türk Telekom ile Evde İnternet ve Tivibu alan yeni müşterilere Netflix ilk 6 ay hediye! 🎁\n\n✅ Yüksek hızlı ev interneti\n✅ Zengin Tivibu içerikleri\n✅ Netflix 6 ay hediye\n\nAltınoluk'ta başvurunu Meydan GSM'de yap, gerisini biz halledelim.\n\n*Kampanya 18 ay taahhütlüdür, Evde İnternet ve Tivibu yeni bireysel müşterileri için geçerlidir. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
+      "caption": "📺 Türk Telekom ile Evde İnternet ve Tivibu alan yeni müşterilere 12 ay Netflix hediye! 🎁\n\n✅ Yüksek hızlı ev interneti\n✅ Zengin Tivibu içerikleri\n✅ 12 ay Netflix hediye\n\nAltınoluk'ta başvurunu Meydan GSM'de yap, gerisini biz halledelim.\n\n*Kampanya 18 ay taahhütlüdür, Evde İnternet ve Tivibu yeni bireysel müşterileri için geçerlidir. Koşullar ve güncel kampanya detayları için mağazamıza danışın."
     }
   }
 }
